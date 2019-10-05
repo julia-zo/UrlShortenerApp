@@ -1,3 +1,20 @@
+# Intellij
+.idea
+**/*.project
+**/*.settings
+**/*.iml
+.idea/*
+.idea/**
+.project
+.settings
+*.iml
+.settings/*
+
+# Folders
+**/target
+target
+target/*
+
 # Compiled class file
 *.class
 
