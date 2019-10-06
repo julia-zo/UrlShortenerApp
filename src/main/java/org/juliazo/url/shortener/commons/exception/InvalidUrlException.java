@@ -1,6 +1,6 @@
 package org.juliazo.url.shortener.commons.exception;
 
-public class InvalidUrlException extends RuntimeException {
+public class InvalidUrlException extends IllegalArgumentException {
 
     /**
      * Instantiates a new Invalid URL exception.

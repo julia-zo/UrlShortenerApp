@@ -1,5 +1,7 @@
 package org.juliazo.url.shortener.model;
 
+import java.util.Objects;
+
 public class ErrorResponsePayload {
 
     private int status;
@@ -12,6 +14,9 @@ public class ErrorResponsePayload {
         this.status = status;
         this.reasonPhrase = reasonPhrase;
         this.message = message;
+    }
+
+    public ErrorResponsePayload() {
     }
 
     public int getStatus() {
@@ -36,5 +41,20 @@ public class ErrorResponsePayload {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ErrorResponsePayload that = (ErrorResponsePayload) o;
+        return status == that.status &&
+                reasonPhrase.equals(that.reasonPhrase) &&
+                message.equals(that.message);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(status, reasonPhrase, message);
     }
 }

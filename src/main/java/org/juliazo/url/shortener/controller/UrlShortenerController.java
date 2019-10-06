@@ -21,7 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-class UrlShortenerController {
+public class UrlShortenerController {
 
     /**
      * The Shortener Service. Implementation of each endpoint mapped here.
@@ -71,6 +71,7 @@ class UrlShortenerController {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     ResponseEntity<ErrorResponsePayload> handleNotFoundError(final ResourceNotFoundException exception) {
+        logger.error("ERROR: short url not found.");
         ErrorResponsePayload errorResponsePayload = new ErrorResponsePayload(HttpStatus.NOT_FOUND.value(),
                 HttpStatus.NOT_FOUND.getReasonPhrase(), exception.getMessage());
         return new ResponseEntity<>(errorResponsePayload, HttpStatus.NOT_FOUND);
@@ -78,6 +79,7 @@ class UrlShortenerController {
 
     @ExceptionHandler(InvalidUrlException.class)
     ResponseEntity<ErrorResponsePayload> handleInvalidUrlError(final InvalidUrlException exception) {
+        logger.error("ERROR: malformed url, or otherwise invalid");
         ErrorResponsePayload errorResponsePayload = new ErrorResponsePayload(HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(), exception.getMessage());
         return new ResponseEntity<>(errorResponsePayload, HttpStatus.BAD_REQUEST);

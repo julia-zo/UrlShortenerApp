@@ -13,7 +13,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 @Service
-public class UrlShortenerService {
+public
+class UrlShortenerService {
 
     /**
      * The constant logger.
@@ -28,10 +29,6 @@ public class UrlShortenerService {
 
         //use the first 6 characters of the hash as short url
         String shortUrl = urlHash.substring(0, 6);
-
-        if (!validUri.isAbsolute()) {
-            validUri = URI.create("http://" + longUrl);
-        }
 
         logger.info("Service: Creating short url");
         URI storedUrl = urlShortenerRepository.storeOrGet(shortUrl, validUri);
@@ -62,11 +59,31 @@ public class UrlShortenerService {
 
     private URI validateUrl(final String longUrl) {
         try {
-            return new URI(longUrl);
-        } catch (URISyntaxException e) {
-            logger.error("ERROR: malformed url, or otherwise invalid");
+            String absoluteUrl = longUrl;
+            if (!longUrl.startsWith("http")) {
+                absoluteUrl = "http://" + longUrl;
+            }
+            return new URI(absoluteUrl);
+        } catch (URISyntaxException | NullPointerException e) {
             throw new InvalidUrlException();
         }
+    }
+
+    /**
+     * All long urls must be absolute (start with http or https) for the
+     * redirect in the ModelAndView class to work.
+     * Relative urls are interpreted as being relative to this service,
+     * not separate urls.
+     *
+     * @param longUrl
+     * @return the url with http protocol
+     */
+    private String makeAbsoluteUrl(String longUrl) {
+        String absoluteUrl = longUrl;
+        if (!longUrl.startsWith("http")) {
+            absoluteUrl = "http://" + longUrl;
+        }
+        return absoluteUrl;
     }
 
     public URI lookupUrl(final String shortUrl) {
@@ -76,7 +93,6 @@ public class UrlShortenerService {
                 return longUrl;
             }
         }
-        logger.error("ERROR: short url not found.");
         throw new ResourceNotFoundException();
     }
 

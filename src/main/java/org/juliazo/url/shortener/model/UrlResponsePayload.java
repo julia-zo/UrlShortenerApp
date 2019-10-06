@@ -1,5 +1,7 @@
 package org.juliazo.url.shortener.model;
 
+import java.util.Objects;
+
 public class UrlResponsePayload {
 
     private String longUrl;
@@ -9,6 +11,9 @@ public class UrlResponsePayload {
     public UrlResponsePayload(String longUrl, String shortUrl) {
         this.longUrl = longUrl;
         this.shortUrl = shortUrl;
+    }
+
+    public UrlResponsePayload() {
     }
 
     public String getLongUrl() {
@@ -25,5 +30,19 @@ public class UrlResponsePayload {
 
     public void setShortUrl(String shortUrl) {
         this.shortUrl = shortUrl;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UrlResponsePayload that = (UrlResponsePayload) o;
+        return longUrl.equals(that.longUrl) &&
+                shortUrl.equals(that.shortUrl);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(longUrl, shortUrl);
     }
 }
