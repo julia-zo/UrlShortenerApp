@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class UrlShortenerRepository {
 
-    private final Map<String, URI> urlStorage = new HashMap<>();
+    public Map<String, URI> urlStorage = new HashMap<>();
 
     public URI storeOrGet(final String shortUrl, final URI validUri) {
 

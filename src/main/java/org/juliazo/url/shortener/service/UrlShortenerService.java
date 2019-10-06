@@ -21,7 +21,7 @@ class UrlShortenerService {
      */
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerService.class);
 
-    private final UrlShortenerRepository urlShortenerRepository = new UrlShortenerRepository();
+    public final UrlShortenerRepository urlShortenerRepository = new UrlShortenerRepository();
 
     public String shortenUrl(final String longUrl) {
         URI validUri = validateUrl(longUrl);
@@ -30,7 +30,6 @@ class UrlShortenerService {
         //use the first 6 characters of the hash as short url
         String shortUrl = urlHash.substring(0, 6);
 
-        logger.info("Service: Creating short url");
         URI storedUrl = urlShortenerRepository.storeOrGet(shortUrl, validUri);
 
         return handleConflicts(validUri, storedUrl, urlHash);
@@ -67,23 +66,6 @@ class UrlShortenerService {
         } catch (URISyntaxException | NullPointerException e) {
             throw new InvalidUrlException();
         }
-    }
-
-    /**
-     * All long urls must be absolute (start with http or https) for the
-     * redirect in the ModelAndView class to work.
-     * Relative urls are interpreted as being relative to this service,
-     * not separate urls.
-     *
-     * @param longUrl
-     * @return the url with http protocol
-     */
-    private String makeAbsoluteUrl(String longUrl) {
-        String absoluteUrl = longUrl;
-        if (!longUrl.startsWith("http")) {
-            absoluteUrl = "http://" + longUrl;
-        }
-        return absoluteUrl;
     }
 
     public URI lookupUrl(final String shortUrl) {

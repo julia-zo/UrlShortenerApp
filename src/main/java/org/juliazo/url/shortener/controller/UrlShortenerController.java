@@ -59,7 +59,7 @@ public class UrlShortenerController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{shortUrl}")
-    public ModelAndView lookupUrl(@PathVariable final String shortUrl) {
+    public ModelAndView lookupUrl(@PathVariable("shortUrl") final String shortUrl) {
         logger.info("Controller: Redirecting from short url: {} ", shortUrl);
         URI redirect = shortenerService.lookupUrl(shortUrl);
 

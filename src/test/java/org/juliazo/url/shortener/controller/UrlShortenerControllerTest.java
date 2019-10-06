@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @RunWith(JUnitPlatform.class)
-public class UrlShortenerControllerTest {
+class UrlShortenerControllerTest {
 
     /**
      * The controller responsible for handling REST requests
@@ -36,7 +36,7 @@ public class UrlShortenerControllerTest {
     private UrlShortenerController urlShortenerController;
 
     /**
-     * The service that holds the entire functionality of the application
+     * The service which holds the core logic for the application
      */
     @Mock
     private UrlShortenerService urlShortenerService;
@@ -49,7 +49,7 @@ public class UrlShortenerControllerTest {
         UrlRequestPayload requestPayload = new UrlRequestPayload();
         requestPayload.setLongUrl("ea.com/frostbite");
 
-        String shortUrl = "8uio2i";
+        String shortUrl = "6e8b9a";
         String composedShortUrl = "http://localhost:8080/" + shortUrl;
         when(urlShortenerService.shortenUrl(eq(requestPayload.getLongUrl()))).thenReturn(shortUrl);
 
@@ -57,7 +57,11 @@ public class UrlShortenerControllerTest {
 
         ResponseEntity  actual = urlShortenerController.shortenUrl(requestPayload);
 
-        assertEquals(expected, actual);
+        UrlResponsePayload actualPayload = (UrlResponsePayload) actual.getBody();
+
+        assertEquals(expected.getStatusCode(), actual.getStatusCode());
+        assertEquals(requestPayload.getLongUrl(), actualPayload.getLongUrl());
+        assertEquals(composedShortUrl, actualPayload.getShortUrl());
     }
 
     /**
@@ -65,7 +69,7 @@ public class UrlShortenerControllerTest {
      */
     @Test
     public void testLookupUrl () {
-        String shortUrl = "8uio2i";
+        String shortUrl = "6e8b9a";
         String composedLongUrl = "http://ea.com/frostbite";
         when(urlShortenerService.lookupUrl(eq(shortUrl))).thenReturn(URI.create(composedLongUrl));
 
@@ -81,13 +85,17 @@ public class UrlShortenerControllerTest {
     public void shouldHandleInvalidUrlException () {
         InvalidUrlException exception = new InvalidUrlException();
 
-        ErrorResponsePayload errorResponsePayload = new ErrorResponsePayload(HttpStatus.BAD_REQUEST.value(),
+        ErrorResponsePayload expectedErrorResponsePayload = new ErrorResponsePayload(HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(), exception.getMessage());
-        ResponseEntity expected = new ResponseEntity(errorResponsePayload, HttpStatus.BAD_REQUEST);
+        ResponseEntity expected = new ResponseEntity(expectedErrorResponsePayload, HttpStatus.BAD_REQUEST);
 
         ResponseEntity actual = urlShortenerController.handleInvalidUrlError(exception);
 
-        assertEquals(expected, actual);
+        ErrorResponsePayload actualPayload = (ErrorResponsePayload) actual.getBody();
+        assertEquals(expected.getStatusCode(), actual.getStatusCode());
+        assertEquals(expectedErrorResponsePayload.getMessage(), actualPayload.getMessage());
+        assertEquals(expectedErrorResponsePayload.getStatus(), actualPayload.getStatus());
+        assertEquals(expectedErrorResponsePayload.getReasonPhrase(), actualPayload.getReasonPhrase());
     }
 
     /**
@@ -97,13 +105,17 @@ public class UrlShortenerControllerTest {
     public void shouldHandleResourceNotFoundlException () {
         ResourceNotFoundException exception = new ResourceNotFoundException();
 
-        ErrorResponsePayload errorResponsePayload = new ErrorResponsePayload(HttpStatus.NOT_FOUND.value(),
+        ErrorResponsePayload expectedErrorResponsePayload = new ErrorResponsePayload(HttpStatus.NOT_FOUND.value(),
                 HttpStatus.NOT_FOUND.getReasonPhrase(), exception.getMessage());
-        ResponseEntity expected = new ResponseEntity(errorResponsePayload, HttpStatus.NOT_FOUND);
+        ResponseEntity expected = new ResponseEntity(expectedErrorResponsePayload, HttpStatus.NOT_FOUND);
 
         ResponseEntity actual = urlShortenerController.handleNotFoundError(exception);
 
-        assertEquals(expected, actual);
+        ErrorResponsePayload actualPayload = (ErrorResponsePayload) actual.getBody();
+        assertEquals(expected.getStatusCode(), actual.getStatusCode());
+        assertEquals(expectedErrorResponsePayload.getMessage(), actualPayload.getMessage());
+        assertEquals(expectedErrorResponsePayload.getStatus(), actualPayload.getStatus());
+        assertEquals(expectedErrorResponsePayload.getReasonPhrase(), actualPayload.getReasonPhrase());
     }
 
     /**
@@ -113,13 +125,17 @@ public class UrlShortenerControllerTest {
     public void shouldHandleConflictingDataException () {
         ConflictingDataException exception = new ConflictingDataException();
 
-        ErrorResponsePayload errorResponsePayload = new ErrorResponsePayload(HttpStatus.CONFLICT.value(),
+        ErrorResponsePayload expectedErrorResponsePayload = new ErrorResponsePayload(HttpStatus.CONFLICT.value(),
                 HttpStatus.CONFLICT.getReasonPhrase(), exception.getMessage());
-        ResponseEntity expected = new ResponseEntity(errorResponsePayload, HttpStatus.CONFLICT);
+        ResponseEntity expected = new ResponseEntity(expectedErrorResponsePayload, HttpStatus.CONFLICT);
 
         ResponseEntity actual = urlShortenerController.handleShortUrlConflictError(exception);
 
-        assertEquals(expected, actual);
+        ErrorResponsePayload actualPayload = (ErrorResponsePayload) actual.getBody();
+        assertEquals(expected.getStatusCode(), actual.getStatusCode());
+        assertEquals(expectedErrorResponsePayload.getMessage(), actualPayload.getMessage());
+        assertEquals(expectedErrorResponsePayload.getStatus(), actualPayload.getStatus());
+        assertEquals(expectedErrorResponsePayload.getReasonPhrase(), actualPayload.getReasonPhrase());
     }
 
 }

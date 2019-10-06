@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * <p>
  * To run all tests except this one (only unit tests)
  * use command line:
- * mvn clean tests -Dtest=\!UrlShortenerAppIntTest
+ * mvn clean test -Dtest=\!UrlShortenerAppIntTest
  * <p>
  * Coverage report will be in ./target/jacoco-coverage/index.html
  */
@@ -36,17 +36,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(classes = UrlShortenerApp.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UrlShortenerAppIntTest {
 
+    public static final int SHORT_URL_SIZE = 6;
     @LocalServerPort
     private int port;
 
-    /**
-     * The Rest template.
-     */
     private final TestRestTemplate restTemplate = new TestRestTemplate();
 
-    /**
-     * The HTTP Headers to be sent on the REST call
-     */
     private final HttpHeaders headers = new HttpHeaders();
 
     /**
@@ -54,16 +49,6 @@ public class UrlShortenerAppIntTest {
      */
     @Autowired
     private UrlShortenerController urlShortenerController;
-
-    /**
-     * Map containing short urls received from service and the
-     * corresponding expected long urls
-     */
-    private final Map<String, String> controlTable = new HashMap();
-
-    private final String[] inputLongUrls = new String[]{"https://google.com", "https://www.google.com,",
-            "http://google.com", "http://www.google.com", "google.com", "www.google.com",
-            "https://www.google.com/search?q=Grandparents%27+Day&oi=ddle&ct=119275999&hl=en-GB&sa=X&ved=0ahUKEwi8rY3qvIflAhWPRMAKHXkaDJsQPQgL&biw=1191&bih=634&dpr=1"};
 
     /**
      * Creates the service URL using localhost and a dynamic port provided by Springboot
@@ -90,47 +75,6 @@ public class UrlShortenerAppIntTest {
     }
 
     /**
-     * POST Operation to shorten an invalid url
-     *
-     * @param requestPayload the input data as a {@link org.juliazo.url.shortener.model.UrlRequestPayload}
-     * @return the response of the request as a {@link org.juliazo.url.shortener.model.ErrorResponsePayload}
-     */
-    private ResponseEntity<ErrorResponsePayload> shortenInvalidUrl(UrlRequestPayload requestPayload) {
-        HttpEntity<UrlRequestPayload> entity = new HttpEntity<>(requestPayload, headers);
-
-        return restTemplate.exchange(
-                createURLWithPort("shorten"),
-                HttpMethod.POST, entity, ErrorResponsePayload.class);
-    }
-
-    /**
-     * GET Operation to lookup an existing short url
-     *
-     * @param shortUrl the short url
-     * @return the response of the request as an http redirect
-     */
-    private ResponseEntity lookupValidShortUrl(String shortUrl) {
-
-        return restTemplate.getForEntity(
-                createURLWithPort(shortUrl),
-                ResponseEntity.class);
-    }
-
-    /**
-     * GET Operation to lookup a non existing short url
-     *
-     * @param shortUrl the short url
-     * @return the response of the request as a {@link org.juliazo.url.shortener.model.ErrorResponsePayload}
-     */
-    private ResponseEntity<ErrorResponsePayload> lookupInvalidShortUrl(String shortUrl) {
-        HttpEntity<String> entity = new HttpEntity<>(null, headers);
-
-        return restTemplate.exchange(
-                createURLWithPort(shortUrl),
-                HttpMethod.GET, entity, ErrorResponsePayload.class);
-    }
-
-    /**
      * All long urls must be absolute (start with http or https) for the
      * redirect in the ModelAndView class to work.
      * Relative urls are interpreted as being relative to this service,
@@ -145,31 +89,6 @@ public class UrlShortenerAppIntTest {
             absoluteUrl = "http://" + longUrl;
         }
         return absoluteUrl;
-    }
-
-    /**
-     * Helper method to save the short url - long url mapping.
-     *
-     * @param shortUrl
-     * @param longUrl
-     */
-    private void saveToControlTable(String shortUrl, String longUrl) {
-        String absoluteUrl = makeAbsoluteUrl(longUrl);
-        controlTable.putIfAbsent(shortUrl, absoluteUrl);
-    }
-
-    /**
-     * Helper method to check if the url returned by the service is the expected one
-     *
-     * @param shortUrl
-     * @param longUrl
-     * @return result of comparison between actual and expected long urls
-     */
-    private boolean checkControlTable(String shortUrl, String longUrl) {
-        String absoluteUrl = makeAbsoluteUrl(longUrl);
-        String storedUrl = controlTable.get(shortUrl);
-
-        return storedUrl.equals(absoluteUrl);
     }
 
     @ParameterizedTest
@@ -189,8 +108,6 @@ public class UrlShortenerAppIntTest {
         var shortUrl = responsePayload.getShortUrl();
         assertNotNull(shortUrl);
         assertTrue(!shortUrl.isEmpty());
-
-        saveToControlTable(shortUrl, longUrl);
     }
 
     /**
@@ -258,13 +175,16 @@ public class UrlShortenerAppIntTest {
      */
     @ParameterizedTest
     @NullSource
-    @ValueSource(strings = {"","https://goo gle.com"})
+    @ValueSource(strings = {"","https://goo gle.com","http://goog|e.com"})
     public void testShortenInvalidUrl(String longUrl) {
         System.out.println("Running test for url: " + longUrl);
         UrlRequestPayload requestPayload = new UrlRequestPayload();
         requestPayload.setLongUrl(longUrl);
 
-        ResponseEntity<ErrorResponsePayload> response = shortenInvalidUrl(requestPayload);
+        ResponseEntity<ErrorResponsePayload> response = restTemplate.exchange(
+                createURLWithPort("shorten"), HttpMethod.POST,
+                new HttpEntity<>(requestPayload, headers), ErrorResponsePayload.class);
+
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 
         ErrorResponsePayload responsePayload = response.getBody();
@@ -274,7 +194,7 @@ public class UrlShortenerAppIntTest {
     }
 
     /**
-     * Test invalid cases for GET /lookup:
+     * Test invalid cases for GET /{shortUrl}:
      * Shorter than 6 chars, bigger than 6 chars, non-existent.
      *
      * @param shortUrl
@@ -284,7 +204,9 @@ public class UrlShortenerAppIntTest {
     public void testLookupInvalidUrl(String shortUrl) {
         System.out.println("Running test for url: " + shortUrl);
 
-        ResponseEntity<ErrorResponsePayload> response = lookupInvalidShortUrl(shortUrl);
+        ResponseEntity<ErrorResponsePayload> response = restTemplate.exchange(
+                createURLWithPort(shortUrl), HttpMethod.GET,
+                null, ErrorResponsePayload.class);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 
         ErrorResponsePayload responsePayload = response.getBody();
@@ -295,7 +217,7 @@ public class UrlShortenerAppIntTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"https://google.com",
+    @ValueSource(strings = {"http://google.com", "www.google.com",
             "https://www.google.com/search?q=Grandparents%27+Day&oi=ddle&ct=119275999&hl=en-GB&sa=X&ved=0ahUKEwi8rY3qvIflAhWPRMAKHXkaDJsQPQgL&biw=1191&bih=634&dpr=1"})
     public void testLookupValidUrl(String longUrl) {
         System.out.println("Running test for url: " + longUrl);
@@ -306,8 +228,12 @@ public class UrlShortenerAppIntTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
         var shortUrl = response.getBody().getShortUrl();
+        shortUrl = shortUrl.substring(shortUrl.length()- SHORT_URL_SIZE);
 
-        ResponseEntity actual = lookupValidShortUrl(shortUrl.substring(shortUrl.length()-6));
+        ResponseEntity actual = restTemplate.getForEntity(
+                createURLWithPort(shortUrl),
+                ResponseEntity.class);
+
         assertEquals(HttpStatus.FOUND, actual.getStatusCode());
         assertEquals(makeAbsoluteUrl(longUrl), actual.getHeaders().getLocation().toString());
     }

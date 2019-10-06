@@ -32,17 +32,4 @@ public class UrlResponsePayload {
         this.shortUrl = shortUrl;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UrlResponsePayload that = (UrlResponsePayload) o;
-        return longUrl.equals(that.longUrl) &&
-                shortUrl.equals(that.shortUrl);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(longUrl, shortUrl);
-    }
 }
