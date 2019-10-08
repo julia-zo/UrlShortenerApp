@@ -1,23 +1,15 @@
 package org.juliazo.url.shortener.repository;
 
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
+import org.juliazo.url.shortener.model.UrlEntity;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
-public class UrlShortenerRepository {
+import java.util.List;
 
-    public Map<String, URI> urlStorage = new HashMap<>();
+@Repository
+public interface UrlShortenerRepository extends CrudRepository<UrlEntity, String> {
 
-    public URI storeOrGet(final String shortUrl, final URI validUri) {
+    List<UrlEntity> findByUrlEntitybyLongUrl(String longUrl);
 
-        URI storedUrl = urlStorage.putIfAbsent(shortUrl, validUri);
-        if (storedUrl == null) {
-            return validUri;
-        }
-        return storedUrl;
-    }
-
-    public URI lookupUrl(final String shortUrl) {
-        return urlStorage.get(shortUrl);
-    }
+    List<UrlEntity> findByUrlEntitybyShortUrl(String shortUrl);
 }

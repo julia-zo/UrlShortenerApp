@@ -4,6 +4,7 @@ import org.juliazo.url.shortener.controller.UrlShortenerController;
 import org.juliazo.url.shortener.model.ErrorResponsePayload;
 import org.juliazo.url.shortener.model.UrlRequestPayload;
 import org.juliazo.url.shortener.model.UrlResponsePayload;
+import org.junit.ClassRule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
@@ -12,12 +13,14 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.*;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.test.context.ContextConfiguration;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @RunWith(JUnitPlatform.class)
 @SpringBootTest(classes = UrlShortenerApp.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ContextConfiguration(initializers = {UrlShortenerAppIntTest.Initializer.class})
 public class UrlShortenerAppIntTest {
 
     public static final int SHORT_URL_SIZE = 6;
@@ -49,6 +53,23 @@ public class UrlShortenerAppIntTest {
      */
     @Autowired
     private UrlShortenerController urlShortenerController;
+
+    @ClassRule
+    public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:11.1")
+            .withDatabaseName("integration-tests-db")
+            .withUsername("intTest")
+            .withPassword("password");
+
+    static class Initializer
+            implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+            TestPropertyValues.of(
+                    "spring.datasource.url=" + postgreSQLContainer.getJdbcUrl(),
+                    "spring.datasource.username=" + postgreSQLContainer.getUsername(),
+                    "spring.datasource.password=" + postgreSQLContainer.getPassword()
+            ).applyTo(configurableApplicationContext.getEnvironment());
+        }
+    }
 
     /**
      * Creates the service URL using localhost and a dynamic port provided by Springboot
