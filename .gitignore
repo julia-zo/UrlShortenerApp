@@ -9,6 +9,7 @@
 .settings
 *.iml
 .settings/*
+.DS_Store
 
 # Folders
 **/target

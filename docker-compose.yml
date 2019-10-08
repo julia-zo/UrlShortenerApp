@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
   app:
-    build: app/
+    image: springio-juliazo/url-shortener:latest
     ports:
       - "8080:8080"
     depends_on:

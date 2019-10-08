@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @RunWith(JUnitPlatform.class)
 @SpringBootTest(classes = UrlShortenerApp.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ContextConfiguration(initializers = {UrlShortenerAppIntTest.Initializer.class})
+//@ContextConfiguration(initializers = {UrlShortenerAppIntTest.Initializer.class})
 public class UrlShortenerAppIntTest {
 
     public static final int SHORT_URL_SIZE = 6;
@@ -54,22 +54,21 @@ public class UrlShortenerAppIntTest {
     @Autowired
     private UrlShortenerController urlShortenerController;
 
-    @ClassRule
-    public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:11.1")
-            .withDatabaseName("integration-tests-db")
-            .withUsername("intTest")
-            .withPassword("password");
-
-    static class Initializer
-            implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-            TestPropertyValues.of(
-                    "spring.datasource.url=" + postgreSQLContainer.getJdbcUrl(),
-                    "spring.datasource.username=" + postgreSQLContainer.getUsername(),
-                    "spring.datasource.password=" + postgreSQLContainer.getPassword()
-            ).applyTo(configurableApplicationContext.getEnvironment());
-        }
-    }
+//    public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:11.1")
+//            .withDatabaseName("integration-tests-db")
+//            .withUsername("intTest")
+//            .withPassword("password");
+//
+//    static class Initializer
+//            implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+//        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+//            TestPropertyValues.of(
+//                    "spring.datasource.url=" + postgreSQLContainer.getJdbcUrl(),
+//                    "spring.datasource.username=" + postgreSQLContainer.getUsername(),
+//                    "spring.datasource.password=" + postgreSQLContainer.getPassword()
+//            ).applyTo(configurableApplicationContext.getEnvironment());
+//        }
+//    }
 
     /**
      * Creates the service URL using localhost and a dynamic port provided by Springboot
