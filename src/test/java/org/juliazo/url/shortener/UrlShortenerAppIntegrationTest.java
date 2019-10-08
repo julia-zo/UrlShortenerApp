@@ -4,7 +4,6 @@ import org.juliazo.url.shortener.controller.UrlShortenerController;
 import org.juliazo.url.shortener.model.ErrorResponsePayload;
 import org.juliazo.url.shortener.model.UrlRequestPayload;
 import org.juliazo.url.shortener.model.UrlResponsePayload;
-import org.junit.ClassRule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
@@ -13,32 +12,26 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.*;
-import org.springframework.test.context.ContextConfiguration;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integration tests for Url Shortener Application
  * To run only integration tests use command line:
- * mvn clean test -Dtest=UrlShortenerAppIntTest
+ * mvn clean test -Dtest=UrlShortenerAppIntegrationTest
  * <p>
  * To run all tests except this one (only unit tests)
  * use command line:
- * mvn clean test -Dtest=\!UrlShortenerAppIntTest
+ * mvn clean test -Dtest=\!UrlShortenerAppIntegrationTest
  * <p>
  * Coverage report will be in ./target/jacoco-coverage/index.html
  */
 @RunWith(JUnitPlatform.class)
 @SpringBootTest(classes = UrlShortenerApp.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-//@ContextConfiguration(initializers = {UrlShortenerAppIntTest.Initializer.class})
-public class UrlShortenerAppIntTest {
+public class UrlShortenerAppIntegrationTest {
 
     public static final int SHORT_URL_SIZE = 6;
     @LocalServerPort
@@ -53,22 +46,6 @@ public class UrlShortenerAppIntTest {
      */
     @Autowired
     private UrlShortenerController urlShortenerController;
-
-//    public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:11.1")
-//            .withDatabaseName("integration-tests-db")
-//            .withUsername("intTest")
-//            .withPassword("password");
-//
-//    static class Initializer
-//            implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-//        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-//            TestPropertyValues.of(
-//                    "spring.datasource.url=" + postgreSQLContainer.getJdbcUrl(),
-//                    "spring.datasource.username=" + postgreSQLContainer.getUsername(),
-//                    "spring.datasource.password=" + postgreSQLContainer.getPassword()
-//            ).applyTo(configurableApplicationContext.getEnvironment());
-//        }
-//    }
 
     /**
      * Creates the service URL using localhost and a dynamic port provided by Springboot
@@ -195,7 +172,7 @@ public class UrlShortenerAppIntTest {
      */
     @ParameterizedTest
     @NullSource
-    @ValueSource(strings = {"","https://goo gle.com","http://goog|e.com"})
+    @ValueSource(strings = {"", "https://goo gle.com", "http://goog|e.com"})
     public void testShortenInvalidUrl(String longUrl) {
         System.out.println("Running test for url: " + longUrl);
         UrlRequestPayload requestPayload = new UrlRequestPayload();
@@ -248,7 +225,7 @@ public class UrlShortenerAppIntTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
         var shortUrl = response.getBody().getShortUrl();
-        shortUrl = shortUrl.substring(shortUrl.length()- SHORT_URL_SIZE);
+        shortUrl = shortUrl.substring(shortUrl.length() - SHORT_URL_SIZE);
 
         ResponseEntity actual = restTemplate.getForEntity(
                 createURLWithPort(shortUrl),

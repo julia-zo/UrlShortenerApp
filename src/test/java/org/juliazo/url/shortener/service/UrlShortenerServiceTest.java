@@ -63,7 +63,7 @@ class UrlShortenerServiceTest {
 
         List<UrlEntity> foundUrls = new ArrayList<>();
         foundUrls.add(new UrlEntity(shortUrl, longUrl.toString()));
-        when(urlShortenerRepository.findByUrlEntitybyShortUrl(eq(shortUrl))).thenReturn(foundUrls);
+        when(urlShortenerRepository.findByShortUrl(eq(shortUrl))).thenReturn(foundUrls);
         URI actual = urlShortenerService.lookupUrl(shortUrl);
 
         assertEquals(longUrl.toString(), actual.toString());
@@ -94,7 +94,7 @@ class UrlShortenerServiceTest {
 
         List<UrlEntity> foundEntities = new ArrayList<>();
         foundEntities.add(new UrlEntity("6e8b9a", longUrl));
-        when(urlShortenerRepository.findByUrlEntitybyLongUrl(any())).thenReturn(foundEntities);
+        when(urlShortenerRepository.findByLongUrl(any())).thenReturn(foundEntities);
 
         String shortUrl = urlShortenerService.shortenUrl(longUrl);
         assertNotNull(shortUrl);
@@ -118,7 +118,7 @@ class UrlShortenerServiceTest {
 
         List<UrlEntity> foundEntities = new ArrayList<>();
         foundEntities.add(new UrlEntity(shortUrl, storedLongUrl));
-        when(urlShortenerRepository.findByUrlEntitybyLongUrl(any())).thenReturn(foundEntities);
+        when(urlShortenerRepository.findByLongUrl(any())).thenReturn(foundEntities);
         when(urlShortenerRepository.save(any(UrlEntity.class))).thenReturn(new UrlEntity(RandomString.make(6), longUrl));
 
         String actualUrl = urlShortenerService.shortenUrl(longUrl);
@@ -137,7 +137,7 @@ class UrlShortenerServiceTest {
         List<UrlEntity> foundEntities = new ArrayList<>();
         UrlEntity storedUrl = new UrlEntity(shortUrl, storedLongUrl);
         foundEntities.add(storedUrl);
-        when(urlShortenerRepository.findByUrlEntitybyLongUrl(any())).thenReturn(foundEntities);
+        when(urlShortenerRepository.findByLongUrl(any())).thenReturn(foundEntities);
         when(urlShortenerRepository.save(any(UrlEntity.class))).thenReturn(storedUrl);
 
         assertThrows(ConflictingDataException.class, () -> {

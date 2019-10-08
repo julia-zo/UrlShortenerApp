@@ -9,7 +9,8 @@ import java.util.List;
 @Repository
 public interface UrlShortenerRepository extends CrudRepository<UrlEntity, String> {
 
-    List<UrlEntity> findByUrlEntitybyLongUrl(String longUrl);
+    List<UrlEntity> findByLongUrl(String longUrl);
 
-    List<UrlEntity> findByUrlEntitybyShortUrl(String shortUrl);
+    List<UrlEntity> findByShortUrl(String shortUrl);
 }
+

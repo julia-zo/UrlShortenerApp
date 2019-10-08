@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 import java.io.Serializable;
+import java.util.Objects;
 
 @Entity
 @IdClass(UrlEntity.class)
@@ -20,6 +21,9 @@ public class UrlEntity implements Serializable {
         this.longUrl = longUrl;
     }
 
+    public UrlEntity() {
+    }
+
     public String getShortUrl() {
         return shortUrl;
     }
@@ -34,5 +38,19 @@ public class UrlEntity implements Serializable {
 
     public void setLongUrl(String longUrl) {
         this.longUrl = longUrl;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UrlEntity urlEntity = (UrlEntity) o;
+        return shortUrl.equals(urlEntity.shortUrl) &&
+                longUrl.equals(urlEntity.longUrl);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(shortUrl, longUrl);
     }
 }

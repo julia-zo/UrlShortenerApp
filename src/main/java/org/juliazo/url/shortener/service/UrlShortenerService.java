@@ -30,7 +30,7 @@ class UrlShortenerService {
 
     public String shortenUrl(final String longUrl) {
         String validUrl = validateUrl(longUrl).toString();
-        List<UrlEntity> foundEntities = urlShortenerRepository.findByUrlEntitybyLongUrl(validUrl);
+        List<UrlEntity> foundEntities = urlShortenerRepository.findByLongUrl(validUrl);
         UrlEntity foundUrl;
         if (foundEntities == null || foundEntities.isEmpty()) {
             String shortUrl = generateShortUrl(validUrl, 0);
@@ -87,8 +87,8 @@ class UrlShortenerService {
     }
 
     public URI lookupUrl(final String shortUrl) {
-        if (shortUrl.length() == 6) {
-            List<UrlEntity> foundUrl = urlShortenerRepository.findByUrlEntitybyShortUrl(shortUrl);
+        if (shortUrl.length() == SHORT_URL_SIZE) {
+            List<UrlEntity> foundUrl = urlShortenerRepository.findByShortUrl(shortUrl);
             if (foundUrl != null && !foundUrl.isEmpty()) {
                 URI longUrl = URI.create(foundUrl.get(0).getLongUrl());
                 return longUrl;

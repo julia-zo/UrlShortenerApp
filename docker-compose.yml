@@ -1,18 +1,18 @@
 version: '3'
 services:
   postgres:
-    build: postgres/
-    volumes:
-      - db-data:/var/lib/postgresql/data/
+    image: postgres:9
+    container_name: shortener-url-db
     environment:
       - POSTGRES_PASSWORD=postgres
     ports:
       - "5432:5432"
   app:
     image: springio-juliazo/url-shortener:latest
+    container_name: shortener-url-api
+    environment:
+      - DB_HOST=shortener-url-db
     ports:
-      - "8080:8080"
+      - "80:8080"
     depends_on:
       - postgres
-volumes:
-  db-data:

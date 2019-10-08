@@ -52,7 +52,7 @@ public class UrlShortenerController {
         logger.info("Controller: Created short url: {}", shortUrl);
         UriComponents uriComponents =
                 UriComponentsBuilder.newInstance()
-                        .scheme("http").host("localhost:8080").path(shortUrl)
+                        .scheme("http").host("localhost:80").path(shortUrl)
                         .build();
         UrlResponsePayload responsePayload = new UrlResponsePayload(longUrl, uriComponents.toUriString());
         return new ResponseEntity<>(responsePayload, HttpStatus.OK);
