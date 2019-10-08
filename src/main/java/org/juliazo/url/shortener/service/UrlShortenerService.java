@@ -36,13 +36,14 @@ class UrlShortenerService {
             String shortUrl = generateShortUrl(validUrl, 0);
             UrlEntity newUrl = new UrlEntity(shortUrl, validUrl);
             foundUrl = urlShortenerRepository.save(newUrl);
+            //save deu conflito:
+            //conflito de long igual, short igual, retorna short
+            //conflito de long igual, short diferente, retorna short do banco
+            //conflito de long diferente, short igual, faz novo short
+            return handleConflicts(validUrl, foundUrl);
         } else {
-            foundUrl = foundEntities.get(0);
-            if (foundUrl.getLongUrl().equals(validUrl)) {
-                return foundEntities.get(0).getShortUrl();
-            }
+            return foundEntities.get(0).getShortUrl();
         }
-        return handleConflicts(validUrl, foundUrl);
     }
 
     private String generateShortUrl(String validUri, int beginIndex) {

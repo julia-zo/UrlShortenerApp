@@ -16,6 +16,8 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.*;
 
+import java.util.concurrent.CountDownLatch;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -233,5 +235,39 @@ public class UrlShortenerAppIntegrationTest {
 
         assertEquals(HttpStatus.FOUND, actual.getStatusCode());
         assertEquals(makeAbsoluteUrl(longUrl), actual.getHeaders().getLocation().toString());
+    }
+
+    @Test
+    public void testConcurrentRequestsWithSamePayload(){
+        final int numOfConcurrentRequests = 3;
+
+        UrlRequestPayload requestPayload = new UrlRequestPayload();
+        requestPayload.setLongUrl("http://goog0le.com");
+
+        CountDownLatch requestsLatch = new CountDownLatch(numOfConcurrentRequests);
+        CountDownLatch releaseLatch = new CountDownLatch(1);
+
+        for(int i = 0; i < numOfConcurrentRequests; i++){
+            new Thread(() -> {
+                try {
+                    releaseLatch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    ResponseEntity<UrlResponsePayload> response = shortenValidUrl(requestPayload);
+                    assertEquals(HttpStatus.OK, response.getStatusCode());
+                } finally {
+                    requestsLatch.countDown();
+                }
+            }).start();
+        }
+
+        releaseLatch.countDown();
+        try {
+            requestsLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
