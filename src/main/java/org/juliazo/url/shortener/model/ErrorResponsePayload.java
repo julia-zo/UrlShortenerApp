@@ -1,7 +1,5 @@
 package org.juliazo.url.shortener.model;
 
-import java.util.Objects;
-
 public class ErrorResponsePayload {
 
     private int status;

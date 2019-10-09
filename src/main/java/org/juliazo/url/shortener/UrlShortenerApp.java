@@ -8,11 +8,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 class UrlShortenerApp {
 
-    /**
-     * The constant logger.
-     */
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerApp.class);
 
+    /**
+     * Spring Boot application starter
+     * @param args
+     */
     public static void main(String[] args) {
         logger.info("Starting URL Shortener Application");
         SpringApplication.run(UrlShortenerApp.class, args);

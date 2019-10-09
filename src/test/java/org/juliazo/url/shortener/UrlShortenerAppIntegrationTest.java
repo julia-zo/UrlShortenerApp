@@ -15,8 +15,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.*;
+import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -95,15 +97,16 @@ public class UrlShortenerAppIntegrationTest {
             "http://google.com", "http://www.google.com", "google.com", "www.google.com",
             "https://www.google.com/search?q=Grandparents%27+Day&oi=ddle&ct=119275999&hl=en-GB&sa=X&ved=0ahUKEwi8rY3qvIflAhWPRMAKHXkaDJsQPQgL&biw=1191&bih=634&dpr=1"})
     public void testShortenValidUrl(String longUrl) {
-        System.out.println("Running test for url: " + longUrl);
+        var randomString = RandomStringUtils.randomAlphabetic(10);
+        System.out.println("Running test for url: " + longUrl + randomString);
         UrlRequestPayload requestPayload = new UrlRequestPayload();
-        requestPayload.setLongUrl(longUrl);
+        requestPayload.setLongUrl(longUrl + randomString);
 
         ResponseEntity<UrlResponsePayload> response = shortenValidUrl(requestPayload);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
         UrlResponsePayload responsePayload = response.getBody();
-        assertEquals(longUrl, responsePayload.getLongUrl());
+        assertEquals(longUrl + randomString, responsePayload.getLongUrl());
         var shortUrl = responsePayload.getShortUrl();
         assertNotNull(shortUrl);
         assertTrue(!shortUrl.isEmpty());
@@ -115,11 +118,12 @@ public class UrlShortenerAppIntegrationTest {
      */
     @Test
     public void testShortenTheSameValidUrl() {
-        var longUrl = "http://google.com";
+        var randomString = RandomStringUtils.randomAlphabetic(10);
+        var longUrl = "http://google.com" + randomString;
         UrlRequestPayload requestPayload1 = new UrlRequestPayload();
         requestPayload1.setLongUrl(longUrl);
         UrlRequestPayload requestPayload2 = new UrlRequestPayload();
-        requestPayload2.setLongUrl("google.com");
+        requestPayload2.setLongUrl("google.com" + randomString);
 
         ResponseEntity<UrlResponsePayload> response1 = shortenValidUrl(requestPayload1);
         assertEquals(HttpStatus.OK, response1.getStatusCode());
@@ -144,11 +148,12 @@ public class UrlShortenerAppIntegrationTest {
      */
     @Test
     public void testShortenDifferentValidUrl() {
-        var longUrl = "http://google.com";
+        var randomString = RandomStringUtils.randomAlphabetic(10);
+        var longUrl = "http://google.com" + randomString;
         UrlRequestPayload requestPayload1 = new UrlRequestPayload();
         requestPayload1.setLongUrl(longUrl);
         UrlRequestPayload requestPayload2 = new UrlRequestPayload();
-        requestPayload2.setLongUrl("http://www.google.com");
+        requestPayload2.setLongUrl("http://www.google.com" + randomString);
 
         ResponseEntity<UrlResponsePayload> response1 = shortenValidUrl(requestPayload1);
         assertEquals(HttpStatus.OK, response1.getStatusCode());
@@ -219,9 +224,10 @@ public class UrlShortenerAppIntegrationTest {
     @ValueSource(strings = {"http://google.com", "www.google.com",
             "https://www.google.com/search?q=Grandparents%27+Day&oi=ddle&ct=119275999&hl=en-GB&sa=X&ved=0ahUKEwi8rY3qvIflAhWPRMAKHXkaDJsQPQgL&biw=1191&bih=634&dpr=1"})
     public void testLookupValidUrl(String longUrl) {
-        System.out.println("Running test for url: " + longUrl);
+        var randomString = RandomStringUtils.randomAlphabetic(10);
+        System.out.println("Running test for url: " + longUrl + randomString);
         UrlRequestPayload requestPayload = new UrlRequestPayload();
-        requestPayload.setLongUrl(longUrl);
+        requestPayload.setLongUrl(longUrl + randomString);
 
         ResponseEntity<UrlResponsePayload> response = shortenValidUrl(requestPayload);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -234,15 +240,16 @@ public class UrlShortenerAppIntegrationTest {
                 ResponseEntity.class);
 
         assertEquals(HttpStatus.FOUND, actual.getStatusCode());
-        assertEquals(makeAbsoluteUrl(longUrl), actual.getHeaders().getLocation().toString());
+        assertEquals(makeAbsoluteUrl(longUrl + randomString), actual.getHeaders().getLocation().toString());
     }
 
     @Test
-    public void testConcurrentRequestsWithSamePayload(){
+    public void testConcurrentShortenRequestsWithSameUrl(){
         final int numOfConcurrentRequests = 3;
+        AtomicBoolean successfulRun = new AtomicBoolean(true);
 
         UrlRequestPayload requestPayload = new UrlRequestPayload();
-        requestPayload.setLongUrl("http://goog0le.com");
+        requestPayload.setLongUrl("http://"+ RandomStringUtils.randomAlphabetic(10)+".com");
 
         CountDownLatch requestsLatch = new CountDownLatch(numOfConcurrentRequests);
         CountDownLatch releaseLatch = new CountDownLatch(1);
@@ -256,7 +263,9 @@ public class UrlShortenerAppIntegrationTest {
                 }
                 try {
                     ResponseEntity<UrlResponsePayload> response = shortenValidUrl(requestPayload);
-                    assertEquals(HttpStatus.OK, response.getStatusCode());
+                    if(!HttpStatus.OK.equals(response.getStatusCode())){
+                        successfulRun.compareAndSet(true, false);
+                    }
                 } finally {
                     requestsLatch.countDown();
                 }
@@ -269,5 +278,7 @@ public class UrlShortenerAppIntegrationTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        assertTrue(successfulRun.get());
     }
 }
