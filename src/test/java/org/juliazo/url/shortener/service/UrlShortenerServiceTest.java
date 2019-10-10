@@ -19,8 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -62,8 +61,7 @@ class UrlShortenerServiceTest {
         URI longUrl = URI.create("http://ea.com/frostbite");
         String shortUrl = "6e8b9a";
 
-        List<UrlEntity> foundUrls = new ArrayList<>();
-        foundUrls.add(new UrlEntity(shortUrl, longUrl.toString()));
+        Optional<UrlEntity> foundUrls = Optional.of(new UrlEntity(shortUrl, longUrl.toString()));
         when(urlShortenerRepository.findByShortUrl(eq(shortUrl))).thenReturn(foundUrls);
         URI actual = urlShortenerService.lookupUrl(shortUrl);
 
@@ -93,8 +91,7 @@ class UrlShortenerServiceTest {
     public void testShortenExistentValidUrl() {
         String longUrl = "https://www.ea.com/frostbite/engine";
 
-        List<UrlEntity> foundEntities = new ArrayList<>();
-        foundEntities.add(new UrlEntity("6e8b9a", longUrl));
+        Optional<UrlEntity> foundEntities = Optional.of(new UrlEntity("6e8b9a", longUrl));
         when(urlShortenerRepository.findByLongUrl(any())).thenReturn(foundEntities);
 
         String shortUrl = urlShortenerService.shortenUrl(longUrl);
@@ -105,11 +102,10 @@ class UrlShortenerServiceTest {
     @Test
     public void testShortenExistentValidUrlAfterConflict() {
         String longUrl = "https://www.ea.com/frostbite/engine";
-        List<UrlEntity> foundEntities = new ArrayList<>();
-        foundEntities.add(new UrlEntity("6e8b9a", longUrl));
+        Optional<UrlEntity> foundEntities = Optional.of(new UrlEntity("6e8b9a", longUrl));
 
         //run 1: no entity found, run 2: entity found
-        when(urlShortenerRepository.findByLongUrl(eq(longUrl))).thenReturn(new ArrayList<>(), foundEntities);
+        when(urlShortenerRepository.findByLongUrl(eq(longUrl))).thenReturn(Optional.empty(), foundEntities);
         //run 1: conflict simulating two threads saving the same entity at the same time
         when(urlShortenerRepository.save(any())).thenThrow(new DataIntegrityViolationException("Conflict"));
 
@@ -135,7 +131,7 @@ class UrlShortenerServiceTest {
 
         UrlEntity proposedUrlEntity = new UrlEntity(shortUrl, longUrl);
         UrlEntity newUrl = new UrlEntity(newShortUrl, longUrl);
-        when(urlShortenerRepository.findByLongUrl(any())).thenReturn(new ArrayList<>());
+        when(urlShortenerRepository.findByLongUrl(any())).thenReturn(Optional.empty());
         when(urlShortenerRepository.save(eq(proposedUrlEntity))).thenThrow(new DataIntegrityViolationException("Conflict"));
         when(urlShortenerRepository.save(eq(newUrl))).thenReturn(newUrl);
 
@@ -149,7 +145,7 @@ class UrlShortenerServiceTest {
     public void testShortenUrlWithTooManyConflict() {
         String longUrl = "https://www.ea.com/frostbite/engine";
 
-        when(urlShortenerRepository.findByLongUrl(any())).thenReturn(new ArrayList<>());
+        when(urlShortenerRepository.findByLongUrl(any())).thenReturn(Optional.empty());
         when(urlShortenerRepository.save(any())).thenThrow(new DataIntegrityViolationException("Conflict"));
 
         assertThrows(ConflictingDataException.class, () -> {

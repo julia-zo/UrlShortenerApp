@@ -24,18 +24,19 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integration tests for Url Shortener Application
@@ -49,14 +50,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * Coverage report will be in ./target/jacoco-coverage/index.html
  */
 @RunWith(JUnitPlatform.class)
-@TestPropertySource("classpath:application-test.properties")
+@ActiveProfiles("integration-test")
 @SpringBootTest(classes = UrlShortenerApp.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UrlShortenerAppIntegrationTest {
 
     public static final int SHORT_URL_SIZE = 6;
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerApp.class);
 
-    static GenericContainer postgres = new PostgreSQLContainer().withExposedPorts(3306);
+    static GenericContainer postgres = new PostgreSQLContainer("postgres:9");
 
     @LocalServerPort
     private int port;
@@ -136,10 +137,11 @@ public class UrlShortenerAppIntegrationTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
         UrlResponsePayload responsePayload = response.getBody();
+        assertNotNull(responsePayload);
         assertEquals(longUrl + randomString, responsePayload.getLongUrl());
         var shortUrl = responsePayload.getShortUrl();
         assertNotNull(shortUrl);
-        assertTrue(!shortUrl.isEmpty());
+        assertFalse(shortUrl.isEmpty());
     }
 
     /**
@@ -161,13 +163,14 @@ public class UrlShortenerAppIntegrationTest {
         ResponseEntity<UrlResponsePayload> response2 = shortenValidUrl(requestPayload2);
         assertEquals(HttpStatus.OK, response2.getStatusCode());
 
-        var shortUrl1 = response1.getBody().getShortUrl();
-        var shortUrl2 = response2.getBody().getShortUrl();
+        UrlResponsePayload responsePayload1 = response1.getBody();
+        UrlResponsePayload responsePayload2 = response2.getBody();
+        assertNotNull(responsePayload1);
+        assertNotNull(responsePayload2);
+        var shortUrl1 = responsePayload1.getShortUrl();
+        var shortUrl2 = responsePayload2.getShortUrl();
 
-        assertNotNull(shortUrl1);
-        assertTrue(!shortUrl1.isEmpty());
-        assertNotNull(shortUrl2);
-        assertTrue(!shortUrl2.isEmpty());
+        assertShortUrlOk(shortUrl1, shortUrl2);
         assertEquals(shortUrl1, shortUrl2);
     }
 
@@ -191,14 +194,22 @@ public class UrlShortenerAppIntegrationTest {
         ResponseEntity<UrlResponsePayload> response2 = shortenValidUrl(requestPayload2);
         assertEquals(HttpStatus.OK, response2.getStatusCode());
 
-        var shortUrl1 = response1.getBody().getShortUrl();
-        var shortUrl2 = response2.getBody().getShortUrl();
+        UrlResponsePayload responsePayload1 = response1.getBody();
+        UrlResponsePayload responsePayload2 = response2.getBody();
+        assertNotNull(responsePayload1);
+        assertNotNull(responsePayload2);
+        var shortUrl1 = responsePayload1.getShortUrl();
+        var shortUrl2 = responsePayload2.getShortUrl();
 
-        assertNotNull(shortUrl1);
-        assertTrue(!shortUrl1.isEmpty());
-        assertNotNull(shortUrl2);
-        assertTrue(!shortUrl2.isEmpty());
+        assertShortUrlOk(shortUrl1, shortUrl2);
         assertNotEquals(shortUrl1, shortUrl2);
+    }
+
+    private void assertShortUrlOk(String shortUrl1, String shortUrl2) {
+        assertNotNull(shortUrl1);
+        assertFalse(shortUrl1.isEmpty());
+        assertNotNull(shortUrl2);
+        assertFalse(shortUrl2.isEmpty());
     }
 
     /**
@@ -222,6 +233,7 @@ public class UrlShortenerAppIntegrationTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 
         ErrorResponsePayload responsePayload = response.getBody();
+        assertNotNull(responsePayload);
         assertEquals(HttpStatus.BAD_REQUEST.value(), responsePayload.getStatus());
         assertEquals(HttpStatus.BAD_REQUEST.getReasonPhrase(), responsePayload.getReasonPhrase());
         assertEquals("The provided url is malformed or otherwise invalid.", responsePayload.getMessage());
@@ -276,7 +288,7 @@ public class UrlShortenerAppIntegrationTest {
     @Test
     public void testConcurrentShortenRequestsWithSameUrl() {
         final int numOfConcurrentRequests = 3;
-        AtomicBoolean successfulRun = new AtomicBoolean(true);
+        AtomicInteger successfulRuns = new AtomicInteger(0);
 
         UrlRequestPayload requestPayload = new UrlRequestPayload();
         requestPayload.setLongUrl("http://" + RandomStringUtils.randomAlphabetic(10) + ".com");
@@ -293,8 +305,8 @@ public class UrlShortenerAppIntegrationTest {
                 }
                 try {
                     ResponseEntity<UrlResponsePayload> response = shortenValidUrl(requestPayload);
-                    if (!HttpStatus.OK.equals(response.getStatusCode())) {
-                        successfulRun.compareAndSet(true, false);
+                    if (HttpStatus.OK.equals(response.getStatusCode())) {
+                        successfulRuns.incrementAndGet();
                     }
                 } finally {
                     requestsLatch.countDown();
@@ -304,11 +316,11 @@ public class UrlShortenerAppIntegrationTest {
 
         releaseLatch.countDown();
         try {
-            requestsLatch.await();
+            requestsLatch.await(3, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        assertTrue(successfulRun.get());
+        assertEquals(3, successfulRuns.get());
     }
 }

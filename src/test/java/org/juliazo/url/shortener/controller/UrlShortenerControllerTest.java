@@ -83,7 +83,7 @@ class UrlShortenerControllerTest {
      */
     @Test
     public void shouldHandleInvalidUrlException () {
-        InvalidUrlException exception = new InvalidUrlException();
+        InvalidUrlException exception = new InvalidUrlException(new Throwable());
 
         ErrorResponsePayload expectedErrorResponsePayload = new ErrorResponsePayload(HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(), exception.getMessage());

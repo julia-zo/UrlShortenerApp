@@ -31,6 +31,7 @@ public class UrlShortenerController {
     public static final String URL_SCHEMA = "http";
     private static final String SERVICE_HOST = "localhost";
     private static final String SERVICE_PORT = "80";
+
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerController.class);
 
     /**

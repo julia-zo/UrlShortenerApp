@@ -14,27 +14,29 @@ import org.springframework.util.DigestUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
+import java.util.Optional;
 
 @Service
 public
 class UrlShortenerService {
 
-    public static final int SHORT_URL_SIZE = 6;
+    private static final int SHORT_URL_SIZE = 6;
+    private static final int DEFAULT_BEGIN_INDEX = 0;
     private static final int MAX_CONFLICT_SOLVING_ATTEMPTS = 10;
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerService.class);
+
 
     @Autowired
     private UrlShortenerRepository urlShortenerRepository;
 
     public String shortenUrl(final String longUrl) {
         String validUrl = validateUrl(longUrl).toString();
-        List<UrlEntity> foundEntities = urlShortenerRepository.findByLongUrl(validUrl);
+        Optional<UrlEntity> foundEntities = urlShortenerRepository.findByLongUrl(validUrl);
 
-        if (foundEntities == null || foundEntities.isEmpty()) {
-            return createAndSaveShortUrl(validUrl, 0);
+        if (foundEntities.isEmpty()) {
+            return createAndSaveShortUrl(validUrl, DEFAULT_BEGIN_INDEX);
         }
-        String foundShortUrl = foundEntities.get(0).getShortUrl();
+        String foundShortUrl = foundEntities.get().getShortUrl();
         logger.info("Found longUrl [{}], using shortUrl [{}] from database", validUrl, foundShortUrl);
         return foundShortUrl;
     }
@@ -58,9 +60,9 @@ class UrlShortenerService {
     }
 
     private String handleConflicts(final String validUrl, final int beginIndex) {
-        List<UrlEntity> conflictingEntities = urlShortenerRepository.findByLongUrl(validUrl);
-        if (conflictingEntities != null && !conflictingEntities.isEmpty()) {
-            String foundShortUrl = conflictingEntities.get(0).getShortUrl();
+        Optional<UrlEntity> conflictingEntities = urlShortenerRepository.findByLongUrl(validUrl);
+        if (conflictingEntities.isPresent()) {
+            String foundShortUrl = conflictingEntities.get().getShortUrl();
             logger.info("Found longUrl[{}], using shortUrl [{}] from database", validUrl, foundShortUrl);
             return foundShortUrl;
         } else {
@@ -83,16 +85,15 @@ class UrlShortenerService {
             return new URI(absoluteUrl);
         } catch (URISyntaxException | NullPointerException e) {
             logger.info("Malformed url, or otherwise invalid");
-            throw new InvalidUrlException();
+            throw new InvalidUrlException(e.getCause());
         }
     }
 
     public URI lookupUrl(final String shortUrl) {
         if (shortUrl.length() == SHORT_URL_SIZE) {
-            List<UrlEntity> foundUrl = urlShortenerRepository.findByShortUrl(shortUrl);
-            if (foundUrl != null && !foundUrl.isEmpty()) {
-                URI longUrl = URI.create(foundUrl.get(0).getLongUrl());
-                return longUrl;
+            Optional<UrlEntity> foundUrl = urlShortenerRepository.findByShortUrl(shortUrl);
+            if (foundUrl.isPresent()) {
+                return URI.create(foundUrl.get().getLongUrl());
             }
         }
         logger.info("Could not find longUrl associated with shortUrl [{}]", shortUrl);
