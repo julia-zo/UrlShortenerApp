@@ -4,6 +4,9 @@ import org.juliazo.url.shortener.controller.UrlShortenerController;
 import org.juliazo.url.shortener.model.ErrorResponsePayload;
 import org.juliazo.url.shortener.model.UrlRequestPayload;
 import org.juliazo.url.shortener.model.UrlResponsePayload;
+import org.juliazo.url.shortener.repository.UrlShortenerRepository;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
@@ -16,13 +19,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Integration tests for Url Shortener Application
@@ -36,11 +49,14 @@ import static org.junit.jupiter.api.Assertions.*;
  * Coverage report will be in ./target/jacoco-coverage/index.html
  */
 @RunWith(JUnitPlatform.class)
+@TestPropertySource("classpath:application-test.properties")
 @SpringBootTest(classes = UrlShortenerApp.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UrlShortenerAppIntegrationTest {
 
     public static final int SHORT_URL_SIZE = 6;
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerApp.class);
+
+    static GenericContainer postgres = new PostgreSQLContainer().withExposedPorts(3306);
 
     @LocalServerPort
     private int port;
@@ -49,11 +65,21 @@ public class UrlShortenerAppIntegrationTest {
 
     private final HttpHeaders headers = new HttpHeaders();
 
-    /**
-     * Controller to whom SpringBoot will assign the context;
-     */
+    @BeforeAll
+    static void setup() {
+        postgres.start();
+    }
+
+    @AfterAll
+    static void tearDown() {
+        postgres.stop();
+    }
+
     @Autowired
     private UrlShortenerController urlShortenerController;
+
+    @Autowired
+    private UrlShortenerRepository urlShortenerRepository;
 
     /**
      * Creates the service URL using localhost and a dynamic port provided by Springboot
@@ -248,17 +274,17 @@ public class UrlShortenerAppIntegrationTest {
     }
 
     @Test
-    public void testConcurrentShortenRequestsWithSameUrl(){
+    public void testConcurrentShortenRequestsWithSameUrl() {
         final int numOfConcurrentRequests = 3;
         AtomicBoolean successfulRun = new AtomicBoolean(true);
 
         UrlRequestPayload requestPayload = new UrlRequestPayload();
-        requestPayload.setLongUrl("http://"+ RandomStringUtils.randomAlphabetic(10)+".com");
+        requestPayload.setLongUrl("http://" + RandomStringUtils.randomAlphabetic(10) + ".com");
 
         CountDownLatch requestsLatch = new CountDownLatch(numOfConcurrentRequests);
         CountDownLatch releaseLatch = new CountDownLatch(1);
 
-        for(int i = 0; i < numOfConcurrentRequests; i++){
+        for (int i = 0; i < numOfConcurrentRequests; i++) {
             new Thread(() -> {
                 try {
                     releaseLatch.await();
@@ -267,7 +293,7 @@ public class UrlShortenerAppIntegrationTest {
                 }
                 try {
                     ResponseEntity<UrlResponsePayload> response = shortenValidUrl(requestPayload);
-                    if(!HttpStatus.OK.equals(response.getStatusCode())){
+                    if (!HttpStatus.OK.equals(response.getStatusCode())) {
                         successfulRun.compareAndSet(true, false);
                     }
                 } finally {

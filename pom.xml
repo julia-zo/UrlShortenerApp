@@ -87,12 +87,10 @@
             <version>1.12.2</version>
             <scope>test</scope>
         </dependency>
-
-
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.2.5</version>
+            <version>42.2.8</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>

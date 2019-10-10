@@ -6,7 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-class UrlShortenerApp {
+public class UrlShortenerApp {
 
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerApp.class);
 

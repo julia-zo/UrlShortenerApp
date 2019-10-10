@@ -3,10 +3,12 @@ package org.juliazo.url.shortener.model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
+@Table(name = "url_entity")
 @IdClass(UrlEntity.class)
 public class UrlEntity implements Serializable {
 
