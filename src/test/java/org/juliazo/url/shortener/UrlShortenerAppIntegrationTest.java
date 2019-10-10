@@ -10,6 +10,8 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -29,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * <p>
  * To run all tests except this one (only unit tests)
  * use command line:
- * mvn clean test -Dtest=\!UrlShortenerAppIntegrationTest
+ * mvn clean test -Dtest=!UrlShortenerAppIntegrationTest
  * <p>
  * Coverage report will be in ./target/jacoco-coverage/index.html
  */
@@ -38,6 +40,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class UrlShortenerAppIntegrationTest {
 
     public static final int SHORT_URL_SIZE = 6;
+    private static final Logger logger = LoggerFactory.getLogger(UrlShortenerApp.class);
+
     @LocalServerPort
     private int port;
 
@@ -98,7 +102,7 @@ public class UrlShortenerAppIntegrationTest {
             "https://www.google.com/search?q=Grandparents%27+Day&oi=ddle&ct=119275999&hl=en-GB&sa=X&ved=0ahUKEwi8rY3qvIflAhWPRMAKHXkaDJsQPQgL&biw=1191&bih=634&dpr=1"})
     public void testShortenValidUrl(String longUrl) {
         var randomString = RandomStringUtils.randomAlphabetic(10);
-        System.out.println("Running test for url: " + longUrl + randomString);
+        logger.debug("Running test for url: " + longUrl + randomString);
         UrlRequestPayload requestPayload = new UrlRequestPayload();
         requestPayload.setLongUrl(longUrl + randomString);
 
@@ -181,7 +185,7 @@ public class UrlShortenerAppIntegrationTest {
     @NullSource
     @ValueSource(strings = {"", "https://goo gle.com", "http://goog|e.com"})
     public void testShortenInvalidUrl(String longUrl) {
-        System.out.println("Running test for url: " + longUrl);
+        logger.debug("Running test for url: " + longUrl);
         UrlRequestPayload requestPayload = new UrlRequestPayload();
         requestPayload.setLongUrl(longUrl);
 
@@ -206,7 +210,7 @@ public class UrlShortenerAppIntegrationTest {
     @ParameterizedTest
     @ValueSource(strings = {"elu39", "balling", "julia1"})
     public void testLookupInvalidUrl(String shortUrl) {
-        System.out.println("Running test for url: " + shortUrl);
+        logger.debug("Running test for url: " + shortUrl);
 
         ResponseEntity<ErrorResponsePayload> response = restTemplate.exchange(
                 createURLWithPort(shortUrl), HttpMethod.GET,
@@ -225,7 +229,7 @@ public class UrlShortenerAppIntegrationTest {
             "https://www.google.com/search?q=Grandparents%27+Day&oi=ddle&ct=119275999&hl=en-GB&sa=X&ved=0ahUKEwi8rY3qvIflAhWPRMAKHXkaDJsQPQgL&biw=1191&bih=634&dpr=1"})
     public void testLookupValidUrl(String longUrl) {
         var randomString = RandomStringUtils.randomAlphabetic(10);
-        System.out.println("Running test for url: " + longUrl + randomString);
+        logger.debug("Running test for url: " + longUrl + randomString);
         UrlRequestPayload requestPayload = new UrlRequestPayload();
         requestPayload.setLongUrl(longUrl + randomString);
 

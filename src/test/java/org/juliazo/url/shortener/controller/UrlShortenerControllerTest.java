@@ -50,7 +50,7 @@ class UrlShortenerControllerTest {
         requestPayload.setLongUrl("ea.com/frostbite");
 
         String shortUrl = "6e8b9a";
-        String composedShortUrl = "http://localhost:8080/" + shortUrl;
+        String composedShortUrl = "http://localhost:80/" + shortUrl;
         when(urlShortenerService.shortenUrl(eq(requestPayload.getLongUrl()))).thenReturn(shortUrl);
 
         ResponseEntity expected = new ResponseEntity (new UrlResponsePayload(requestPayload.getLongUrl(), composedShortUrl), HttpStatus.OK);
