@@ -25,6 +25,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 
+/**
+ * Url Shortener Controller. Responsible for handling HTTP requests.
+ * All endpoints mapped to the application must be defined here.
+ */
 @RestController
 public class UrlShortenerController {
 
@@ -39,16 +43,17 @@ public class UrlShortenerController {
      */
     private final UrlShortenerService shortenerService;
 
-    /**
-     * Instantiates a new Url Shortener controller.
-     *
-     * @param shortenerService the url shortener service
-     */
     @Autowired
     public UrlShortenerController(UrlShortenerService shortenerService) {
         this.shortenerService = shortenerService;
     }
 
+    /**
+     * POST endpoint to create an alias for a given url, known as short url.
+     *
+     * @param urlRequestPayload holds the url to be shortened
+     * @return an absolute url with the short alias as a path parameter
+     */
     @RequestMapping(method = RequestMethod.POST, value = "/shorten", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UrlResponsePayload> shortenUrl(@RequestBody final UrlRequestPayload urlRequestPayload) {
         String longUrl = urlRequestPayload.getLongUrl();
@@ -63,6 +68,12 @@ public class UrlShortenerController {
         return new ResponseEntity<>(responsePayload, HttpStatus.OK);
     }
 
+    /**
+     * GET endpoint to exchange a short url alias for its corresponding long url
+     *
+     * @param shortUrl alias for a given url
+     * @return a 302 FOUND status code, redirecting the user to the correct url
+     */
     @RequestMapping(method = RequestMethod.GET, value = "/{shortUrl}")
     public ModelAndView lookupUrl(@PathVariable("shortUrl") final String shortUrl) {
         logger.info("Redirecting from short url [{}] ", shortUrl);
@@ -74,6 +85,13 @@ public class UrlShortenerController {
         return new ModelAndView("redirect:" + uriComponents.toUriString());
     }
 
+    /**
+     * Exception handler for cases when the short url alias passed to {@link #lookupUrl} endpoint has no
+     * corresponding long url in the database.
+     *
+     * @param exception {@link ResourceNotFoundException}
+     * @return 404 NOT FOUND status code
+     */
     @ExceptionHandler(ResourceNotFoundException.class)
     ResponseEntity<ErrorResponsePayload> handleNotFoundError(final ResourceNotFoundException exception) {
         ErrorResponsePayload errorResponsePayload = new ErrorResponsePayload(HttpStatus.NOT_FOUND.value(),
@@ -81,6 +99,13 @@ public class UrlShortenerController {
         return new ResponseEntity<>(errorResponsePayload, HttpStatus.NOT_FOUND);
     }
 
+    /**
+     * Exception handler for cases when the long url passed to {@link #shortenUrl} does not comply with
+     * RFC 2396 or when no long url was passed.
+     *
+     * @param exception {@link InvalidUrlException}
+     * @return 400 BAD REQUEST status code
+     */
     @ExceptionHandler(InvalidUrlException.class)
     ResponseEntity<ErrorResponsePayload> handleInvalidUrlError(final InvalidUrlException exception) {
         ErrorResponsePayload errorResponsePayload = new ErrorResponsePayload(HttpStatus.BAD_REQUEST.value(),
@@ -88,6 +113,13 @@ public class UrlShortenerController {
         return new ResponseEntity<>(errorResponsePayload, HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Exception handler for cases when it was not possible to create a short url alias for the long url passed
+     * to {@link #shortenUrl} due to the excessive number of conflicting records in the database.
+     *
+     * @param exception {@link ConflictingDataException}
+     * @return 409 CONFLICT status code
+     */
     @ExceptionHandler(ConflictingDataException.class)
     ResponseEntity<ErrorResponsePayload> handleShortUrlConflictError(final ConflictingDataException exception) {
         ErrorResponsePayload errorResponsePayload = new ErrorResponsePayload(HttpStatus.CONFLICT.value(),

@@ -44,6 +44,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * Integration tests for Url Shortener Application
+ * The integration tests required the docker environment
+ * to be up and running.
+ * <p>
  * To run only integration tests use command line:
  * mvn clean test -Dtest=UrlShortenerAppIntegrationTest
  * <p>
@@ -61,7 +64,7 @@ public class UrlShortenerAppIntegrationTest {
     public static final int SHORT_URL_SIZE = 6;
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerApp.class);
 
-    static GenericContainer postgres = new PostgreSQLContainer("postgres:9");
+    static GenericContainer postgres = new PostgreSQLContainer("postgres:11");
 
     @LocalServerPort
     private int port;
@@ -346,6 +349,9 @@ public class UrlShortenerAppIntegrationTest {
         String longUrl = generateRandomUrl();
         String hash = DigestUtils.md5DigestAsHex(longUrl.getBytes());
 
+        //Currently the maximum number of attempts to solve a conflict is 10.
+        //We need 11 entries to conflict with the initial attempt, and 10
+        //more attempts to solve the conflict.
         List<UrlEntity> conflictingEntities = List.of(
                 new UrlEntity(hash.substring(0,6), generateRandomUrl()),
                 new UrlEntity(hash.substring(1,7), generateRandomUrl()),

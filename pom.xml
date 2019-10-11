@@ -143,7 +143,6 @@
                             <!-- Exclude SpringBoot Application Launcher class from coverage reports. -->
                             <excludes>
                                 <exclude>**/*UrlShortenerApp.*</exclude>
-                                <exclude>META-INF/**</exclude>
                             </excludes>
                         </configuration>
                     </execution>

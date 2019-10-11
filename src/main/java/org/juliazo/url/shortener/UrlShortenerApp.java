@@ -13,15 +13,15 @@ package org.juliazo.url.shortener;
 
   How to execute it:
   1: create a docker image for the service:
-  on terminal run: $mvn clean install docker:build
+  execute command line: $mvn clean install docker:build
   2: mount the service and the database containers
-  on terminal run: $docker-compose up
+  execute command line: $docker-compose up
   3: app will be available on http://localhost:80
 
   The database will persist with the stored data in between executions, i.e. when the
   service is stopped and started again. If you want to re-run the application in a
   clean way, you will need to stop and remove the created containers by executing the
-  following command on the terminal: $docker-compose down -v
+  following command line: $docker-compose down -v
 
   @author Julia Zottis
  */
