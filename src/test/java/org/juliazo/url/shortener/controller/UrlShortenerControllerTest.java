@@ -65,7 +65,7 @@ class UrlShortenerControllerTest {
     }
 
     /**
-     * Test: Send a valid short url to /lookup endpoint, receive a long url in response
+     * Test: Send a valid short url to /{shortUrl }, the lookup endpoint, receive a long url in response
      */
     @Test
     public void testLookupUrl () {

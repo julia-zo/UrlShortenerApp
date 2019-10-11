@@ -4,15 +4,20 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.Table;
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * DTO representing the pair short url - long url
+ * Both values must be unique.
+ */
 @Entity
 @Table(name = "url_entity")
 @IdClass(UrlEntity.class)
 public class UrlEntity implements Serializable {
 
-    @Id
+    @Column(unique = true)
     private String shortUrl;
 
     @Id

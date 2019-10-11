@@ -40,8 +40,7 @@ class UrlShortenerServiceTest {
     private UrlShortenerRepository urlShortenerRepository;
 
     /**
-     * All long urls must be absolute (start with http or https) for the
-     * redirect in the ModelAndView class to work.
+     * All long urls must be absolute (start with http or https).
      * Relative urls are interpreted as being relative to this service,
      * not separate urls.
      *
@@ -69,8 +68,8 @@ class UrlShortenerServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"elu39", "balling", "julia1", ""})
-    public void testLookupInValidUrl(String shortUrl) {
+    @ValueSource(strings = {"elu39", "balling", "julia1", "", " "})
+    public void testLookupInvalidUrl(String shortUrl) {
         assertThrows(ResourceNotFoundException.class, () -> {
             urlShortenerService.lookupUrl(shortUrl);
         });
@@ -100,13 +99,13 @@ class UrlShortenerServiceTest {
     }
 
     @Test
-    public void testShortenExistentValidUrlAfterConflict() {
+    public void testShortenValidUrlAfterConflict() {
         String longUrl = "https://www.ea.com/frostbite/engine";
         Optional<UrlEntity> foundEntities = Optional.of(new UrlEntity("6e8b9a", longUrl));
 
-        //run 1: no entity found, run 2: entity found
+        //Step 1: no entity found, Step 3: entity found
         when(urlShortenerRepository.findByLongUrl(eq(longUrl))).thenReturn(Optional.empty(), foundEntities);
-        //run 1: conflict simulating two threads saving the same entity at the same time
+        //Step 2: conflict simulating two threads saving the same entity at the same time
         when(urlShortenerRepository.save(any())).thenThrow(new DataIntegrityViolationException("Conflict"));
 
         String shortUrl = urlShortenerService.shortenUrl(longUrl);
@@ -121,24 +120,6 @@ class UrlShortenerServiceTest {
         assertThrows(InvalidUrlException.class, () -> {
             urlShortenerService.shortenUrl(longUrl);
         });
-    }
-
-    @Test
-    public void testShortenUrlWithOneShortUrlConflict() {
-        String longUrl = "https://www.ea.com/frostbite/engine";
-        String shortUrl = "6e8b9a";
-        String newShortUrl = "e8b9a8";
-
-        UrlEntity proposedUrlEntity = new UrlEntity(shortUrl, longUrl);
-        UrlEntity newUrl = new UrlEntity(newShortUrl, longUrl);
-        when(urlShortenerRepository.findByLongUrl(any())).thenReturn(Optional.empty());
-        when(urlShortenerRepository.save(eq(proposedUrlEntity))).thenThrow(new DataIntegrityViolationException("Conflict"));
-        when(urlShortenerRepository.save(eq(newUrl))).thenReturn(newUrl);
-
-        String actualUrl = urlShortenerService.shortenUrl(longUrl);
-        assertNotNull(actualUrl);
-        assertTrue(!actualUrl.isEmpty());
-        assertNotEquals(shortUrl, actualUrl);
     }
 
     @Test
