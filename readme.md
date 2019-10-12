@@ -21,7 +21,7 @@ The service will produce the same short url alias when receiving the same long u
    3) For all other cases, urls are different.
    
 ## Architecture
-![](./Url Shortener App Architecture.png)
+![](./Architecture.png)
 
 The system is designed as two separate Docker containers, one for the application, named url-shortener-api
  and  one for the database, named url-shortener-db. The container image for the database is downloaded as is
