@@ -22,6 +22,7 @@ import org.springframework.web.servlet.ModelAndView;
 import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -60,6 +61,7 @@ class UrlShortenerControllerTest {
         UrlResponsePayload actualPayload = (UrlResponsePayload) actual.getBody();
 
         assertEquals(expected.getStatusCode(), actual.getStatusCode());
+        assertNotNull(actualPayload);
         assertEquals(requestPayload.getLongUrl(), actualPayload.getLongUrl());
         assertEquals(composedShortUrl, actualPayload.getShortUrl());
     }
@@ -89,10 +91,11 @@ class UrlShortenerControllerTest {
                 HttpStatus.BAD_REQUEST.getReasonPhrase(), exception.getMessage());
         ResponseEntity expected = new ResponseEntity(expectedErrorResponsePayload, HttpStatus.BAD_REQUEST);
 
-        ResponseEntity actual = urlShortenerController.handleInvalidUrlError(exception);
+        ResponseEntity actual = org.juliazo.url.shortener.controller.UrlShortenerController.handleInvalidUrlError(exception);
 
         ErrorResponsePayload actualPayload = (ErrorResponsePayload) actual.getBody();
         assertEquals(expected.getStatusCode(), actual.getStatusCode());
+        assertNotNull(actualPayload);
         assertEquals(expectedErrorResponsePayload.getMessage(), actualPayload.getMessage());
         assertEquals(expectedErrorResponsePayload.getStatus(), actualPayload.getStatus());
         assertEquals(expectedErrorResponsePayload.getReasonPhrase(), actualPayload.getReasonPhrase());
@@ -102,17 +105,18 @@ class UrlShortenerControllerTest {
      * Test: Check correctly formatted response when a ResourceNotFoundException is raised
      */
     @Test
-    public void shouldHandleResourceNotFoundlException () {
+    public void shouldHandleResourceNotFoundException () {
         ResourceNotFoundException exception = new ResourceNotFoundException();
 
         ErrorResponsePayload expectedErrorResponsePayload = new ErrorResponsePayload(HttpStatus.NOT_FOUND.value(),
                 HttpStatus.NOT_FOUND.getReasonPhrase(), exception.getMessage());
         ResponseEntity expected = new ResponseEntity(expectedErrorResponsePayload, HttpStatus.NOT_FOUND);
 
-        ResponseEntity actual = urlShortenerController.handleNotFoundError(exception);
+        ResponseEntity actual = org.juliazo.url.shortener.controller.UrlShortenerController.handleNotFoundError(exception);
 
         ErrorResponsePayload actualPayload = (ErrorResponsePayload) actual.getBody();
         assertEquals(expected.getStatusCode(), actual.getStatusCode());
+        assertNotNull(actualPayload);
         assertEquals(expectedErrorResponsePayload.getMessage(), actualPayload.getMessage());
         assertEquals(expectedErrorResponsePayload.getStatus(), actualPayload.getStatus());
         assertEquals(expectedErrorResponsePayload.getReasonPhrase(), actualPayload.getReasonPhrase());
@@ -129,10 +133,11 @@ class UrlShortenerControllerTest {
                 HttpStatus.CONFLICT.getReasonPhrase(), exception.getMessage());
         ResponseEntity expected = new ResponseEntity(expectedErrorResponsePayload, HttpStatus.CONFLICT);
 
-        ResponseEntity actual = urlShortenerController.handleShortUrlConflictError(exception);
+        ResponseEntity actual = org.juliazo.url.shortener.controller.UrlShortenerController.handleShortUrlConflictError(exception);
 
         ErrorResponsePayload actualPayload = (ErrorResponsePayload) actual.getBody();
         assertEquals(expected.getStatusCode(), actual.getStatusCode());
+        assertNotNull(actualPayload);
         assertEquals(expectedErrorResponsePayload.getMessage(), actualPayload.getMessage());
         assertEquals(expectedErrorResponsePayload.getStatus(), actualPayload.getStatus());
         assertEquals(expectedErrorResponsePayload.getReasonPhrase(), actualPayload.getReasonPhrase());

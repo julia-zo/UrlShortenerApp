@@ -32,7 +32,7 @@ import java.net.URI;
 @RestController
 public class UrlShortenerController {
 
-    public static final String URL_SCHEMA = "http";
+    private static final String URL_SCHEMA = "http";
     private static final String SERVICE_HOST = "localhost";
     private static final String SERVICE_PORT = "80";
 
@@ -55,7 +55,7 @@ public class UrlShortenerController {
      * @return an absolute url with the short alias as a path parameter
      */
     @RequestMapping(method = RequestMethod.POST, value = "/shorten", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UrlResponsePayload> shortenUrl(@RequestBody final UrlRequestPayload urlRequestPayload) {
+    public ResponseEntity<UrlResponsePayload> shortenUrl(@RequestBody UrlRequestPayload urlRequestPayload) {
         String longUrl = urlRequestPayload.getLongUrl();
         logger.info("Attempting to create short url for [{}]", longUrl);
         String shortUrl = shortenerService.shortenUrl(longUrl);
@@ -75,7 +75,7 @@ public class UrlShortenerController {
      * @return a 302 FOUND status code, redirecting the user to the correct url
      */
     @RequestMapping(method = RequestMethod.GET, value = "/{shortUrl}")
-    public ModelAndView lookupUrl(@PathVariable("shortUrl") final String shortUrl) {
+    public ModelAndView lookupUrl(@PathVariable("shortUrl") String shortUrl) {
         logger.info("Redirecting from short url [{}] ", shortUrl);
         URI redirect = shortenerService.lookupUrl(shortUrl);
 
@@ -93,7 +93,7 @@ public class UrlShortenerController {
      * @return 404 NOT FOUND status code
      */
     @ExceptionHandler(ResourceNotFoundException.class)
-    ResponseEntity<ErrorResponsePayload> handleNotFoundError(final ResourceNotFoundException exception) {
+    static ResponseEntity<ErrorResponsePayload> handleNotFoundError(ResourceNotFoundException exception) {
         ErrorResponsePayload errorResponsePayload = new ErrorResponsePayload(HttpStatus.NOT_FOUND.value(),
                 HttpStatus.NOT_FOUND.getReasonPhrase(), exception.getMessage());
         return new ResponseEntity<>(errorResponsePayload, HttpStatus.NOT_FOUND);
@@ -107,7 +107,7 @@ public class UrlShortenerController {
      * @return 400 BAD REQUEST status code
      */
     @ExceptionHandler(InvalidUrlException.class)
-    ResponseEntity<ErrorResponsePayload> handleInvalidUrlError(final InvalidUrlException exception) {
+    static ResponseEntity<ErrorResponsePayload> handleInvalidUrlError(InvalidUrlException exception) {
         ErrorResponsePayload errorResponsePayload = new ErrorResponsePayload(HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(), exception.getMessage());
         return new ResponseEntity<>(errorResponsePayload, HttpStatus.BAD_REQUEST);
@@ -121,7 +121,7 @@ public class UrlShortenerController {
      * @return 409 CONFLICT status code
      */
     @ExceptionHandler(ConflictingDataException.class)
-    ResponseEntity<ErrorResponsePayload> handleShortUrlConflictError(final ConflictingDataException exception) {
+    static ResponseEntity<ErrorResponsePayload> handleShortUrlConflictError(ConflictingDataException exception) {
         ErrorResponsePayload errorResponsePayload = new ErrorResponsePayload(HttpStatus.CONFLICT.value(),
                 HttpStatus.CONFLICT.getReasonPhrase(), exception.getMessage());
         return new ResponseEntity<>(errorResponsePayload, HttpStatus.CONFLICT);

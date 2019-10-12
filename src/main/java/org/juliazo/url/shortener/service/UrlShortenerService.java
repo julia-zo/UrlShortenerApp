@@ -55,7 +55,7 @@ public class UrlShortenerService {
      * @see #createAndSaveShortUrl
      * @see #handleConflicts
      */
-    public String shortenUrl(final String longUrl) {
+    public String shortenUrl(String longUrl) {
         String validUrl = validateUrl(longUrl);
         Optional<UrlEntity> foundEntities = urlShortenerRepository.findByLongUrl(validUrl);
 
@@ -77,7 +77,7 @@ public class UrlShortenerService {
      * @param beginIndex from where should the short url start in the url hash
      * @return the generated short url
      */
-    private String generateShortUrl(String validUrl, int beginIndex) {
+    private static String generateShortUrl(String validUrl, int beginIndex) {
         String urlHash = DigestUtils.md5DigestAsHex(validUrl.getBytes());
         return urlHash.substring(beginIndex, beginIndex + SHORT_URL_SIZE);
     }
@@ -131,7 +131,7 @@ public class UrlShortenerService {
      * @throws ConflictingDataException when the number of {@code conflictingAttempts} exceeds
      *                                  {@value MAX_CONFLICT_SOLVING_ATTEMPTS}
      */
-    private String handleConflicts(final String validUrl, final int conflictingAttempts) {
+    private String handleConflicts(String validUrl, int conflictingAttempts) {
         Optional<UrlEntity> conflictingEntities = urlShortenerRepository.findByLongUrl(validUrl);
         if (conflictingEntities.isPresent()) {
             String foundShortUrl = conflictingEntities.get().getShortUrl();
@@ -157,7 +157,7 @@ public class UrlShortenerService {
      * @return the absolute url, valid
      * @throws InvalidUrlException for invalid urls
      */
-    private String validateUrl(final String longUrl) {
+    private static String validateUrl(String longUrl) {
         try {
             String absoluteUrl = longUrl;
             if (!longUrl.startsWith("http")) {
@@ -178,7 +178,7 @@ public class UrlShortenerService {
      * @return the corresponding long url
      * @throws ResourceNotFoundException when there is no corresponding long url
      */
-    public URI lookupUrl(final String shortUrl) {
+    public URI lookupUrl(String shortUrl) {
         if (shortUrl.length() == SHORT_URL_SIZE) {
             Optional<UrlEntity> foundUrl = urlShortenerRepository.findByShortUrl(shortUrl);
             if (foundUrl.isPresent()) {

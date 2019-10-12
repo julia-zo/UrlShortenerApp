@@ -8,7 +8,7 @@ services:
     ports:
       - "5432:5432"
   app:
-    image: springio-juliazo/url-shortener:latest
+    image: juliazo/url-shortener:latest
     container_name: shortener-url-api
     environment:
       - DB_HOST=shortener-url-db

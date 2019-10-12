@@ -31,7 +31,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -61,10 +60,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 @SpringBootTest(classes = UrlShortenerApp.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UrlShortenerAppIntegrationTest {
 
-    public static final int SHORT_URL_SIZE = 6;
+    private static final int SHORT_URL_SIZE = 6;
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerApp.class);
 
-    static GenericContainer postgres = new PostgreSQLContainer("postgres:11");
+    private static final GenericContainer postgres = new PostgreSQLContainer("postgres:11");
 
     @LocalServerPort
     private int port;
@@ -121,7 +120,7 @@ public class UrlShortenerAppIntegrationTest {
      * @param longUrl
      * @return the url with http protocol
      */
-    private String makeAbsoluteUrl(String longUrl) {
+    private static String makeAbsoluteUrl(String longUrl) {
         String absoluteUrl = longUrl;
         if (!longUrl.startsWith("http")) {
             absoluteUrl = "http://" + longUrl;
@@ -211,7 +210,7 @@ public class UrlShortenerAppIntegrationTest {
         assertNotEquals(shortUrl1, shortUrl2);
     }
 
-    private void assertShortUrlOk(String shortUrl1, String shortUrl2) {
+    private static void assertShortUrlOk(String shortUrl1, String shortUrl2) {
         assertNotNull(shortUrl1);
         assertFalse(shortUrl1.isEmpty());
         assertNotNull(shortUrl2);
@@ -262,6 +261,7 @@ public class UrlShortenerAppIntegrationTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 
         ErrorResponsePayload responsePayload = response.getBody();
+        assertNotNull(responsePayload);
         assertEquals(HttpStatus.NOT_FOUND.value(), responsePayload.getStatus());
 
         assertEquals("The requested short url was not found.", responsePayload.getMessage());
@@ -280,7 +280,9 @@ public class UrlShortenerAppIntegrationTest {
         ResponseEntity<UrlResponsePayload> response = shortenValidUrl(requestPayload);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
-        var shortUrl = response.getBody().getShortUrl();
+        UrlResponsePayload responsePayload = response.getBody();
+        assertNotNull(responsePayload);
+        var shortUrl = responsePayload.getShortUrl();
         shortUrl = shortUrl.substring(shortUrl.length() - SHORT_URL_SIZE);
 
         ResponseEntity actual = restTemplate.getForEntity(
@@ -298,7 +300,7 @@ public class UrlShortenerAppIntegrationTest {
      */
     @Test
     public void testConcurrentShortenRequestsWithSameUrl() {
-        final int numOfConcurrentRequests = 3;
+        int numOfConcurrentRequests = 3;
         AtomicInteger successfulRuns = new AtomicInteger(0);
 
         UrlRequestPayload requestPayload = new UrlRequestPayload();
@@ -332,10 +334,10 @@ public class UrlShortenerAppIntegrationTest {
             e.printStackTrace();
         }
 
-        assertEquals(3, successfulRuns.get());
+        assertEquals(numOfConcurrentRequests, successfulRuns.get());
     }
 
-    private String generateRandomUrl () {
+    private static String generateRandomUrl() {
         return ("http://conflict."
                 + RandomStringUtils.randomAlphabetic(5) + ".com");
     }
@@ -345,7 +347,7 @@ public class UrlShortenerAppIntegrationTest {
      * for short urls based on a given hash, but not save in the database the url
      * used to generate the hash.
      */
-    private String createDataForConflict () {
+    private String createDataForConflict() {
         String longUrl = generateRandomUrl();
         String hash = DigestUtils.md5DigestAsHex(longUrl.getBytes());
 
@@ -353,18 +355,18 @@ public class UrlShortenerAppIntegrationTest {
         //We need 11 entries to conflict with the initial attempt, and 10
         //more attempts to solve the conflict.
         List<UrlEntity> conflictingEntities = List.of(
-                new UrlEntity(hash.substring(0,6), generateRandomUrl()),
-                new UrlEntity(hash.substring(1,7), generateRandomUrl()),
-                new UrlEntity(hash.substring(2,8), generateRandomUrl()),
-                new UrlEntity(hash.substring(3,9), generateRandomUrl()),
-                new UrlEntity(hash.substring(4,10), generateRandomUrl()),
-                new UrlEntity(hash.substring(5,11), generateRandomUrl()),
-                new UrlEntity(hash.substring(6,12), generateRandomUrl()),
-                new UrlEntity(hash.substring(7,13), generateRandomUrl()),
-                new UrlEntity(hash.substring(8,14), generateRandomUrl()),
-                new UrlEntity(hash.substring(9,15), generateRandomUrl()),
-                new UrlEntity(hash.substring(10,16), generateRandomUrl()),
-                new UrlEntity(hash.substring(11,17), generateRandomUrl()));
+                new UrlEntity(hash.substring(0, 6), generateRandomUrl()),
+                new UrlEntity(hash.substring(1, 7), generateRandomUrl()),
+                new UrlEntity(hash.substring(2, 8), generateRandomUrl()),
+                new UrlEntity(hash.substring(3, 9), generateRandomUrl()),
+                new UrlEntity(hash.substring(4, 10), generateRandomUrl()),
+                new UrlEntity(hash.substring(5, 11), generateRandomUrl()),
+                new UrlEntity(hash.substring(6, 12), generateRandomUrl()),
+                new UrlEntity(hash.substring(7, 13), generateRandomUrl()),
+                new UrlEntity(hash.substring(8, 14), generateRandomUrl()),
+                new UrlEntity(hash.substring(9, 15), generateRandomUrl()),
+                new UrlEntity(hash.substring(10, 16), generateRandomUrl()),
+                new UrlEntity(hash.substring(11, 17), generateRandomUrl()));
         urlShortenerRepository.saveAll(conflictingEntities);
         return longUrl;
     }
@@ -386,6 +388,6 @@ public class UrlShortenerAppIntegrationTest {
         assertNotNull(responsePayload);
         assertEquals(HttpStatus.CONFLICT.value(), responsePayload.getStatus());
         assertEquals(HttpStatus.CONFLICT.getReasonPhrase(), responsePayload.getReasonPhrase());
-        assertEquals("All attempts to create a short url resulted in conflicts, please try a different URL", responsePayload.getMessage());
+        assertEquals("All attempts to create a short url resulted in conflicts, please try a different URL.", responsePayload.getMessage());
     }
 }

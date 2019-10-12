@@ -8,6 +8,6 @@ public class ConflictingDataException extends RuntimeException {
      * the long url have resulted in conflict in the database.
      */
     public ConflictingDataException() {
-        super("All attempts to create a short url resulted in conflicts, please try a different URL");
+        super("All attempts to create a short url resulted in conflicts, please try a different URL.");
     }
 }

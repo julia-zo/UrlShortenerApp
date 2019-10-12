@@ -47,7 +47,7 @@ class UrlShortenerServiceTest {
      * @param longUrl
      * @return the url with http protocol
      */
-    private String makeAbsoluteUrl(String longUrl) {
+    private static String makeAbsoluteUrl(String longUrl) {
         String absoluteUrl = longUrl;
         if (!longUrl.startsWith("http")) {
             absoluteUrl = "http://" + longUrl;
@@ -70,9 +70,7 @@ class UrlShortenerServiceTest {
     @ParameterizedTest
     @ValueSource(strings = {"elu39", "balling", "julia1", "", " "})
     public void testLookupInvalidUrl(String shortUrl) {
-        assertThrows(ResourceNotFoundException.class, () -> {
-            urlShortenerService.lookupUrl(shortUrl);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> urlShortenerService.lookupUrl(shortUrl));
     }
 
     @ParameterizedTest
@@ -83,7 +81,7 @@ class UrlShortenerServiceTest {
 
         String shortUrl = urlShortenerService.shortenUrl(longUrl);
         assertNotNull(shortUrl);
-        assertTrue(!shortUrl.isEmpty());
+        assertFalse(shortUrl.isEmpty());
     }
 
     @Test
@@ -95,7 +93,7 @@ class UrlShortenerServiceTest {
 
         String shortUrl = urlShortenerService.shortenUrl(longUrl);
         assertNotNull(shortUrl);
-        assertTrue(!shortUrl.isEmpty());
+        assertFalse(shortUrl.isEmpty());
     }
 
     @Test
@@ -110,16 +108,14 @@ class UrlShortenerServiceTest {
 
         String shortUrl = urlShortenerService.shortenUrl(longUrl);
         assertNotNull(shortUrl);
-        assertTrue(!shortUrl.isEmpty());
+        assertFalse(shortUrl.isEmpty());
     }
 
     @ParameterizedTest
     @NullSource
     @ValueSource(strings = {"", " ", "http://goo gle.com", "goog|e.com"})
     public void testShortenInvalidUrl(String longUrl) {
-        assertThrows(InvalidUrlException.class, () -> {
-            urlShortenerService.shortenUrl(longUrl);
-        });
+        assertThrows(InvalidUrlException.class, () -> urlShortenerService.shortenUrl(longUrl));
     }
 
     @Test
@@ -129,8 +125,6 @@ class UrlShortenerServiceTest {
         when(urlShortenerRepository.findByLongUrl(any())).thenReturn(Optional.empty());
         when(urlShortenerRepository.save(any())).thenThrow(new DataIntegrityViolationException("Conflict"));
 
-        assertThrows(ConflictingDataException.class, () -> {
-            urlShortenerService.shortenUrl(longUrl);
-        });
+        assertThrows(ConflictingDataException.class, () -> urlShortenerService.shortenUrl(longUrl));
     }
 }
