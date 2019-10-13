@@ -54,11 +54,11 @@ class UrlShortenerControllerTest {
         String composedShortUrl = "http://localhost:80/" + shortUrl;
         when(urlShortenerService.shortenUrl(eq(requestPayload.getLongUrl()))).thenReturn(shortUrl);
 
-        ResponseEntity expected = new ResponseEntity (new UrlResponsePayload(requestPayload.getLongUrl(), composedShortUrl), HttpStatus.OK);
+        ResponseEntity<UrlResponsePayload> expected = new ResponseEntity<> (new UrlResponsePayload(requestPayload.getLongUrl(), composedShortUrl), HttpStatus.OK);
 
-        ResponseEntity  actual = urlShortenerController.shortenUrl(requestPayload);
+        ResponseEntity<UrlResponsePayload>  actual = urlShortenerController.shortenUrl(requestPayload);
 
-        UrlResponsePayload actualPayload = (UrlResponsePayload) actual.getBody();
+        UrlResponsePayload actualPayload = actual.getBody();
 
         assertEquals(expected.getStatusCode(), actual.getStatusCode());
         assertNotNull(actualPayload);
@@ -89,11 +89,11 @@ class UrlShortenerControllerTest {
 
         ErrorResponsePayload expectedErrorResponsePayload = new ErrorResponsePayload(HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(), exception.getMessage());
-        ResponseEntity expected = new ResponseEntity(expectedErrorResponsePayload, HttpStatus.BAD_REQUEST);
+        ResponseEntity<ErrorResponsePayload> expected = new ResponseEntity<> (expectedErrorResponsePayload, HttpStatus.BAD_REQUEST);
 
-        ResponseEntity actual = org.juliazo.url.shortener.controller.UrlShortenerController.handleInvalidUrlError(exception);
+        ResponseEntity<ErrorResponsePayload> actual = UrlShortenerController.handleInvalidUrlError(exception);
 
-        ErrorResponsePayload actualPayload = (ErrorResponsePayload) actual.getBody();
+        ErrorResponsePayload actualPayload = actual.getBody();
         assertEquals(expected.getStatusCode(), actual.getStatusCode());
         assertNotNull(actualPayload);
         assertEquals(expectedErrorResponsePayload.getMessage(), actualPayload.getMessage());
@@ -110,11 +110,11 @@ class UrlShortenerControllerTest {
 
         ErrorResponsePayload expectedErrorResponsePayload = new ErrorResponsePayload(HttpStatus.NOT_FOUND.value(),
                 HttpStatus.NOT_FOUND.getReasonPhrase(), exception.getMessage());
-        ResponseEntity expected = new ResponseEntity(expectedErrorResponsePayload, HttpStatus.NOT_FOUND);
+        ResponseEntity<ErrorResponsePayload> expected = new ResponseEntity<>(expectedErrorResponsePayload, HttpStatus.NOT_FOUND);
 
-        ResponseEntity actual = org.juliazo.url.shortener.controller.UrlShortenerController.handleNotFoundError(exception);
+        ResponseEntity<ErrorResponsePayload> actual = UrlShortenerController.handleNotFoundError(exception);
 
-        ErrorResponsePayload actualPayload = (ErrorResponsePayload) actual.getBody();
+        ErrorResponsePayload actualPayload = actual.getBody();
         assertEquals(expected.getStatusCode(), actual.getStatusCode());
         assertNotNull(actualPayload);
         assertEquals(expectedErrorResponsePayload.getMessage(), actualPayload.getMessage());
@@ -131,11 +131,11 @@ class UrlShortenerControllerTest {
 
         ErrorResponsePayload expectedErrorResponsePayload = new ErrorResponsePayload(HttpStatus.CONFLICT.value(),
                 HttpStatus.CONFLICT.getReasonPhrase(), exception.getMessage());
-        ResponseEntity expected = new ResponseEntity(expectedErrorResponsePayload, HttpStatus.CONFLICT);
+        ResponseEntity<ErrorResponsePayload> expected = new ResponseEntity<>(expectedErrorResponsePayload, HttpStatus.CONFLICT);
 
-        ResponseEntity actual = org.juliazo.url.shortener.controller.UrlShortenerController.handleShortUrlConflictError(exception);
+        ResponseEntity<ErrorResponsePayload> actual = UrlShortenerController.handleShortUrlConflictError(exception);
 
-        ErrorResponsePayload actualPayload = (ErrorResponsePayload) actual.getBody();
+        ErrorResponsePayload actualPayload = actual.getBody();
         assertEquals(expected.getStatusCode(), actual.getStatusCode());
         assertNotNull(actualPayload);
         assertEquals(expectedErrorResponsePayload.getMessage(), actualPayload.getMessage());

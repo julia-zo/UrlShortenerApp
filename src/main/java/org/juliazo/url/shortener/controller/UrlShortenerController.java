@@ -62,7 +62,7 @@ public class UrlShortenerController {
 
         UriComponents uriComponents =
                 UriComponentsBuilder.newInstance()
-                        .scheme(URL_SCHEMA).host(SERVICE_HOST + ':' + SERVICE_PORT).path(shortUrl)
+                        .scheme(URL_SCHEMA).host(SERVICE_HOST).port(SERVICE_PORT).path(shortUrl)
                         .build();
         UrlResponsePayload responsePayload = new UrlResponsePayload(longUrl, uriComponents.toUriString());
         return new ResponseEntity<>(responsePayload, HttpStatus.OK);

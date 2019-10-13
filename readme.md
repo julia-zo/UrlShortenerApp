@@ -39,7 +39,7 @@ The system is designed as two separate Docker containers, one for the applicatio
 * An active account on Docker Hub
 
 ### Running Unit Tests
-There are 23 unit tests that set the line coverage to 80%.
+There are 24 unit tests that set the line coverage to 80%.
 
 To run only unit tests:
 ```
@@ -49,7 +49,7 @@ $ mvn clean test -Dtest=!UrlShortenerAppIntegrationTest
 Unit Test coverage is provided by JaCoCo, you can find the report at `./target/jacoco-coverage/index.html`.
 
 ### Running Integration Tests
-There are 22 integration tests that set the Line coverage to 88%.
+There are 23 integration tests that set the Line coverage to 88%.
 
 All integration tests are located in class [UrlShortenerAppIntegrationTest](./src/test/java/org/juliazo/url/shortener/UrlShortenerAppIntegrationTest.java).
 

@@ -129,7 +129,7 @@ public class UrlShortenerAppIntegrationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"https://google.com", "https://www.google.com,",
+    @ValueSource(strings = {"https://google.com", "https://www.google.com,", "httpforever.com",
             "http://google.com", "http://www.google.com", "google.com", "www.google.com",
             "https://www.google.com/search?q=Grandparents%27+Day&oi=ddle&ct=119275999&hl=en-GB&sa=X&ved=0ahUKEwi8rY3qvIflAhWPRMAKHXkaDJsQPQgL&biw=1191&bih=634&dpr=1"})
     public void testShortenValidUrl(String longUrl) {
@@ -343,8 +343,8 @@ public class UrlShortenerAppIntegrationTest {
     }
 
     /**
-     * Fabricate a hash conflict in the service, inject the database with 10 entries
-     * for short urls based on a given hash, but not save in the database the url
+     * Fabricates a hash conflict in the service: injects the database with 10 entries
+     * for short urls based on a given hash, but does not save into the database the url
      * used to generate the hash.
      */
     private String createDataForConflict() {

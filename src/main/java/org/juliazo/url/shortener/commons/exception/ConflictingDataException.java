@@ -4,7 +4,7 @@ public class ConflictingDataException extends RuntimeException {
 
     /**
      * Instantiates a new Conflicting Data exception.
-     * This exception occurs when all attempts to create a short url based on the MD5 hash of
+     * This exception occurs when all attempts to create a short url based on the hash of
      * the long url have resulted in conflict in the database.
      */
     public ConflictingDataException() {

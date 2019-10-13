@@ -57,12 +57,12 @@ public class UrlShortenerService {
      */
     public String shortenUrl(String longUrl) {
         String validUrl = validateUrl(longUrl);
-        Optional<UrlEntity> foundEntities = urlShortenerRepository.findByLongUrl(validUrl);
+        Optional<UrlEntity> foundEntity = urlShortenerRepository.findByLongUrl(validUrl);
 
-        if (foundEntities.isEmpty()) {
+        if (foundEntity.isEmpty()) {
             return createAndSaveShortUrl(validUrl, DEFAULT_BEGIN_INDEX);
         }
-        String foundShortUrl = foundEntities.get().getShortUrl();
+        String foundShortUrl = foundEntity.get().getShortUrl();
         logger.info("Found longUrl [{}], using shortUrl [{}] from database", validUrl, foundShortUrl);
         return foundShortUrl;
     }
@@ -132,9 +132,9 @@ public class UrlShortenerService {
      *                                  {@value MAX_CONFLICT_SOLVING_ATTEMPTS}
      */
     private String handleConflicts(String validUrl, int conflictingAttempts) {
-        Optional<UrlEntity> conflictingEntities = urlShortenerRepository.findByLongUrl(validUrl);
-        if (conflictingEntities.isPresent()) {
-            String foundShortUrl = conflictingEntities.get().getShortUrl();
+        Optional<UrlEntity> conflictingEntity = urlShortenerRepository.findByLongUrl(validUrl);
+        if (conflictingEntity.isPresent()) {
+            String foundShortUrl = conflictingEntity.get().getShortUrl();
             logger.info("Found longUrl[{}], using shortUrl [{}] from database", validUrl, foundShortUrl);
             return foundShortUrl;
         } else {
@@ -160,13 +160,13 @@ public class UrlShortenerService {
     private static String validateUrl(String longUrl) {
         try {
             String absoluteUrl = longUrl;
-            if (!longUrl.startsWith("http")) {
+            if (!longUrl.startsWith("http://") && !longUrl.startsWith("https://")) {
                 absoluteUrl = "http://" + longUrl;
             }
             return new URI(absoluteUrl).toString();
-        } catch (URISyntaxException | NullPointerException e) {
+        } catch (URISyntaxException | NullPointerException exception) {
             logger.info("Malformed url, or otherwise invalid");
-            throw new InvalidUrlException(e.getCause());
+            throw new InvalidUrlException(exception);
         }
     }
 
@@ -180,9 +180,9 @@ public class UrlShortenerService {
      */
     public URI lookupUrl(String shortUrl) {
         if (shortUrl.length() == SHORT_URL_SIZE) {
-            Optional<UrlEntity> foundUrl = urlShortenerRepository.findByShortUrl(shortUrl);
-            if (foundUrl.isPresent()) {
-                return URI.create(foundUrl.get().getLongUrl());
+            Optional<UrlEntity> foundEntity = urlShortenerRepository.findByShortUrl(shortUrl);
+            if (foundEntity.isPresent()) {
+                return URI.create(foundEntity.get().getLongUrl());
             }
         }
         logger.info("Could not find longUrl associated with shortUrl [{}]", shortUrl);

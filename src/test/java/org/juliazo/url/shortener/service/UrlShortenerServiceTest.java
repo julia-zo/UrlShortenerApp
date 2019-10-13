@@ -21,7 +21,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import java.net.URI;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -60,8 +63,8 @@ class UrlShortenerServiceTest {
         URI longUrl = URI.create("http://ea.com/frostbite");
         String shortUrl = "6e8b9a";
 
-        Optional<UrlEntity> foundUrls = Optional.of(new UrlEntity(shortUrl, longUrl.toString()));
-        when(urlShortenerRepository.findByShortUrl(eq(shortUrl))).thenReturn(foundUrls);
+        Optional<UrlEntity> foundEntity = Optional.of(new UrlEntity(shortUrl, longUrl.toString()));
+        when(urlShortenerRepository.findByShortUrl(eq(shortUrl))).thenReturn(foundEntity);
         URI actual = urlShortenerService.lookupUrl(shortUrl);
 
         assertEquals(longUrl.toString(), actual.toString());
@@ -74,7 +77,7 @@ class UrlShortenerServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"https://google.com", "http://www.google.com,", "google.com",
+    @ValueSource(strings = {"https://google.com", "http://www.google.com,", "google.com", "httpforever.com",
             "https://www.google.com/search?q=Grandparents%27+Day&oi=ddle&ct=119275999&hl=en-GB&sa=X&ved=0ahUKEwi8rY3qvIflAhWPRMAKHXkaDJsQPQgL&biw=1191&bih=634&dpr=1"})
     public void testShortenValidUrl(String longUrl) {
         when(urlShortenerRepository.save(any(UrlEntity.class))).thenReturn(new UrlEntity(RandomString.make(6), makeAbsoluteUrl(longUrl)));
@@ -88,27 +91,25 @@ class UrlShortenerServiceTest {
     public void testShortenExistentValidUrl() {
         String longUrl = "https://www.ea.com/frostbite/engine";
 
-        Optional<UrlEntity> foundEntities = Optional.of(new UrlEntity("6e8b9a", longUrl));
-        when(urlShortenerRepository.findByLongUrl(any())).thenReturn(foundEntities);
+        Optional<UrlEntity> foundEntity = Optional.of(new UrlEntity("6e8b9a", longUrl));
+        when(urlShortenerRepository.findByLongUrl(any())).thenReturn(foundEntity);
 
         String shortUrl = urlShortenerService.shortenUrl(longUrl);
-        assertNotNull(shortUrl);
-        assertFalse(shortUrl.isEmpty());
+        assertEquals("6e8b9a", shortUrl);
     }
 
     @Test
     public void testShortenValidUrlAfterConflict() {
         String longUrl = "https://www.ea.com/frostbite/engine";
-        Optional<UrlEntity> foundEntities = Optional.of(new UrlEntity("6e8b9a", longUrl));
+        Optional<UrlEntity> foundEntity = Optional.of(new UrlEntity("6e8b9a", longUrl));
 
         //Step 1: no entity found, Step 3: entity found
-        when(urlShortenerRepository.findByLongUrl(eq(longUrl))).thenReturn(Optional.empty(), foundEntities);
+        when(urlShortenerRepository.findByLongUrl(any())).thenReturn(Optional.empty(), foundEntity);
         //Step 2: conflict simulating two threads saving the same entity at the same time
         when(urlShortenerRepository.save(any())).thenThrow(new DataIntegrityViolationException("Conflict"));
 
         String shortUrl = urlShortenerService.shortenUrl(longUrl);
-        assertNotNull(shortUrl);
-        assertFalse(shortUrl.isEmpty());
+        assertEquals("6e8b9a", shortUrl);
     }
 
     @ParameterizedTest
@@ -119,7 +120,7 @@ class UrlShortenerServiceTest {
     }
 
     @Test
-    public void testShortenUrlWithTooManyConflict() {
+    public void testShortenUrlWithTooManyConflicts() {
         String longUrl = "https://www.ea.com/frostbite/engine";
 
         when(urlShortenerRepository.findByLongUrl(any())).thenReturn(Optional.empty());
