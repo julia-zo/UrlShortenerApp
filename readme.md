@@ -81,7 +81,7 @@ $ docker-compose up
 You can access the app at `http://localhost:80`.
 
 ### Examining Logs
-Log4J was used to provide logs for this application. All logs are being shown in the console and printed out to a file.
+SLF4J was used to provide logs for this application. All logs are being shown in the console and printed out to a file.
 
 Log level can be changed at [Application.properties](./src/main/resources/application.properties). Default level is INFO 
 for classes inside [juliazo](./src/main/java/org/juliazo) package and ERROR for spring framework related classes.
