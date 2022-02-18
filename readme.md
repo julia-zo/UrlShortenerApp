@@ -35,7 +35,7 @@ The system is designed as two separate Docker containers, one for the applicatio
 ### Prerequisites
 * Java JDK 1.11
 * Maven 3.6.2
-* Docker 19.03.2
+* Docker Engine 20.10.12
 * An active account on Docker Hub
 
 ### Running Unit Tests
@@ -72,7 +72,7 @@ $ mvn clean install dockerfile:build
 ```
 * All unit and integration tests will be executed;
 * Application will not compile if there is any test failure;
-* Coverage for all tests will available at `./target/jacoco-coverage/index.html`;
+* Coverage for all tests will be available at `./target/jacoco-coverage/index.html`;
 #### 2) Instantiate the containers and run the application
 ```
 $ docker-compose up

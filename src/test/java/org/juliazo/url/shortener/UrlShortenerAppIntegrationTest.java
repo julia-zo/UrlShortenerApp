@@ -63,24 +63,12 @@ public class UrlShortenerAppIntegrationTest {
     private static final int SHORT_URL_SIZE = 6;
     private static final Logger logger = LoggerFactory.getLogger(UrlShortenerApp.class);
 
-    private static final GenericContainer postgres = new PostgreSQLContainer("postgres:11");
-
     @LocalServerPort
     private int port;
 
     private final TestRestTemplate restTemplate = new TestRestTemplate();
 
     private final HttpHeaders headers = new HttpHeaders();
-
-    @BeforeAll
-    static void setup() {
-        postgres.start();
-    }
-
-    @AfterAll
-    static void tearDown() {
-        postgres.stop();
-    }
 
     @Autowired
     private UrlShortenerController urlShortenerController;
