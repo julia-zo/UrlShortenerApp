@@ -6,8 +6,6 @@ import org.juliazo.url.shortener.model.UrlEntity;
 import org.juliazo.url.shortener.model.UrlRequestPayload;
 import org.juliazo.url.shortener.model.UrlResponsePayload;
 import org.juliazo.url.shortener.repository.UrlShortenerRepository;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
@@ -27,8 +25,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.util.DigestUtils;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import java.util.List;
