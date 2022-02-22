@@ -101,7 +101,7 @@ public class UrlShortenerAppIntegrationTest {
      * Relative urls are interpreted as being relative to this service,
      * not separate urls.
      *
-     * @param longUrl
+     * @param longUrl user provided url
      * @return the url with http protocol
      */
     private static String makeAbsoluteUrl(String longUrl) {
@@ -205,7 +205,7 @@ public class UrlShortenerAppIntegrationTest {
      * Test invalid cases for POST /shorten:
      * Null, empty string, space, invalid characters.
      *
-     * @param longUrl
+     * @param longUrl user provided url
      */
     @ParameterizedTest
     @NullSource
@@ -232,7 +232,7 @@ public class UrlShortenerAppIntegrationTest {
      * Test invalid cases for GET /{shortUrl}:
      * Shorter than 6 chars, bigger than 6 chars, non-existent.
      *
-     * @param shortUrl
+     * @param shortUrl application generated short url identifier
      */
     @ParameterizedTest
     @ValueSource(strings = {"elu39", "balling", "julia1"})

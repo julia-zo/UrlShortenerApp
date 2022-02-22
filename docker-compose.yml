@@ -4,7 +4,8 @@ services:
     image: postgres:11
     container_name: shortener-url-db
     environment:
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USERNAME=${POSTGRES_USERNAME}
     ports:
       - "5432:5432"
   app:
@@ -12,6 +13,8 @@ services:
     container_name: shortener-url-api
     environment:
       - DB_HOST=shortener-url-db
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USERNAME=${POSTGRES_USERNAME}
     ports:
       - "80:8080"
     depends_on:

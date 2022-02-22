@@ -6,7 +6,6 @@ import javax.persistence.IdClass;
 import javax.persistence.Table;
 import javax.persistence.Column;
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * DTO representing the pair short url - long url
@@ -47,17 +46,4 @@ public class UrlEntity implements Serializable {
         this.longUrl = longUrl;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UrlEntity urlEntity = (UrlEntity) o;
-        return shortUrl.equals(urlEntity.shortUrl) &&
-                longUrl.equals(urlEntity.longUrl);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(shortUrl, longUrl);
-    }
 }

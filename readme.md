@@ -39,7 +39,7 @@ The system is designed as two separate Docker containers, one for the applicatio
 * An active account on Docker Hub
 
 ### Running Unit Tests
-There are 24 unit tests that set the line coverage to 80%.
+There are 24 unit tests that set the line coverage to 89%.
 
 To run only unit tests:
 ```
@@ -49,7 +49,7 @@ $ mvn clean test -Dtest=!UrlShortenerAppIntegrationTest
 Unit Test coverage is provided by JaCoCo, you can find the report at `./target/jacoco-coverage/index.html`.
 
 ### Running Integration Tests
-There are 23 integration tests that set the Line coverage to 88%.
+There are 23 integration tests that set the Line coverage to 98%.
 
 All integration tests are located in class [UrlShortenerAppIntegrationTest](./src/test/java/org/juliazo/url/shortener/UrlShortenerAppIntegrationTest.java).
 
@@ -72,6 +72,7 @@ $ mvn clean install dockerfile:build
 ```
 * All unit and integration tests will be executed;
 * Application will not compile if there is any test failure;
+* In order to run the tests and successfully build the image, you must have your Docker up and running;
 * Coverage for all tests will be available at `./target/jacoco-coverage/index.html`;
 #### 2) Instantiate the containers and run the application
 ```
@@ -206,7 +207,6 @@ Content-Type: application/json
 ```
 
 ## Improvements
-* Not use the database password in plain text;
 * Add a cache solution in case the response time is not low enough;
 * Check long url for malicious scripts;
 * Logs and error messages could be better formatted to improve autonomous indexing and analysis;

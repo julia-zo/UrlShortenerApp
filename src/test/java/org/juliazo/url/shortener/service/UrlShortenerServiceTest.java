@@ -47,7 +47,7 @@ class UrlShortenerServiceTest {
      * Relative urls are interpreted as being relative to this service,
      * not separate urls.
      *
-     * @param longUrl
+     * @param longUrl user provided url
      * @return the url with http protocol
      */
     private static String makeAbsoluteUrl(String longUrl) {
